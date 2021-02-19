@@ -3,7 +3,8 @@ from socket import AF_INET, socket, SOCK_STREAM, gethostbyname, gethostname
 from threading import Thread
 
 clients = {}
-screenShares = {}
+reciveing_screenshares = {}
+sending_screenshares = {}
 addresses = {}
 
 HOST = "0.0.0.0"
@@ -23,24 +24,53 @@ def accept_incoming_connections():
         # send welcome message to get username
         client.send(bytes("[MSG] Welcome! Now type your username and press enter!", "utf8"))
 
-        # get the username from the user and send out a welcome message
+        reciveing_screenshare = f"[SCREENSHARE_{client_address[0]}_R]"
+        sending_screenshare = f"[SCREENSHARE_{client_address[0]}_S]"
 
-        #if username != f"[SCREENSHARE_{client_address[0]}_]":
-        print(client_address)
+        # get the username from the user and send out a welcome message if
+        # the user is not a screenshare account 
+        username = client.recv(BUFSIZ).decode("utf8")
+        if username != reciveing_screenshare and username != sending_screenshare:
 
-        # add this user to a dictonary
-        addresses[client] = client_address
+            # send welcome message
+            welcome = f"[MSG] Welcome {username}! If you ever want to quit, type '"+"{quit}"+"' to exit."
+            client.send(bytes(welcome, "utf8"))
 
-        # start a individual thread for this client
-        Thread(target=handle_client, args=(client,)).start()
+            # add this user to a dictonary
+            addresses[client] = client_address
+
+            # start a individual thread for this client
+            Thread(target=handle_client, args=(client, username)).start()
+        
+        # if the account is a screenshare account
+        elif username == reciveing_screenshare:
+
+            # save the screenshare acoount
+            reciveing_screenshare[client] = client_address
+
+            # start a thread to handle reciving screenshare accounts
+            Thread(target=handle_reciveing_screenshare, args=(client,)).start()
+
+        # if the account is a sending screenshare account
+        elif username == sending_screenshare:
+            
+            # save the screenshare account
+            sending_screenshares[client] = client_address
+
+            # start a thread to handle sending screenshare accounts
+            Thread(target=handle_sending_screenshare, args=(client,)).start()
 
 
-def handle_client(client):  # Takes client socket as argument.
+def handle_sending_screenshare(client):
+    pass
+
+
+def handle_reciveing_screenshare(client):
+    pass
+
+
+def handle_client(client, username):  # Takes client socket as argument.
     """Handles a single client connection."""
-
-    username = client.recv(BUFSIZ).decode("utf8")
-    welcome = f"[MSG] Welcome {username}! If you ever want to quit, type '"+"{quit}"+"' to exit."
-    client.send(bytes(welcome, "utf8"))
 
     # tell everyone that the user joined the chat
     msg = f"{username} has joined the chat!"

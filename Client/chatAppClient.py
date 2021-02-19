@@ -56,10 +56,11 @@ def reset(event=None):
         my_msg.set("") # clear the entry_field
 
 
+def startScreenShareMenu():
+    import ScreenShareGUI
+
 def openScreenShareMenu(event=None):
-    import ScreenShareReciver
-    screen_share_thread = Thread(target=ScreenShareReciver.screenShareMain, args=(HOST, PORT,))
-    screen_share_thread.start()
+    Thread(target=startScreenShareMenu).start()
 
 top = tkinter.Tk()
 top.title("School Chat")
