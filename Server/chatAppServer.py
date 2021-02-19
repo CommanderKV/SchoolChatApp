@@ -1,14 +1,16 @@
 """Server for multithreaded (asynchronous) chat application."""
-from socket import AF_INET, socket, SOCK_STREAM
+from socket import AF_INET, socket, SOCK_STREAM, gethostbyname, gethostname
+from requests import get as ipGet
 from threading import Thread
 
 clients = {}
 addresses = {}
 
-HOST = ''
-PORT = 33000
+HOST = "0.0.0.0"#gethostbyname(gethostname())#ipGet("https://api.ipify.org").text
+PORT = 80
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
+print(ADDR)
 
 def accept_incoming_connections():
     """Sets up handling for incoming clients."""
@@ -48,8 +50,14 @@ def handle_client(client):  # Takes client socket as argument.
         msg = client.recv(BUFSIZ)
 
         # if the message is not quit then send msg
-        if msg != bytes("{quit}", "utf8"):
+        if msg != bytes("{quit}", "utf8") or msg != bytes("{serverQuit}", "utf8"):
             broadcast(msg, username+": ")
+        
+        # if the message is for the server to shutdown
+        elif msg == bytes("{serverQuit}", "utf8"):
+            client.close()
+            del clients[client]
+            quit()
 
         # if the message is quit then
         else:
