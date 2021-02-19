@@ -3,6 +3,7 @@ from socket import AF_INET, socket, SOCK_STREAM, gethostbyname, gethostname
 from threading import Thread
 
 clients = {}
+screenShares = {}
 addresses = {}
 
 HOST = "0.0.0.0"
@@ -20,7 +21,12 @@ def accept_incoming_connections():
         print(f"{client_address[0]}:{client_address[1]} has connected.")
 
         # send welcome message to get username
-        client.send(bytes("Welcome! Now type your username and press enter!", "utf8"))
+        client.send(bytes("[MSG] Welcome! Now type your username and press enter!", "utf8"))
+
+        # get the username from the user and send out a welcome message
+
+        #if username != f"[SCREENSHARE_{client_address[0]}_]":
+        print(client_address)
 
         # add this user to a dictonary
         addresses[client] = client_address
@@ -32,9 +38,8 @@ def accept_incoming_connections():
 def handle_client(client):  # Takes client socket as argument.
     """Handles a single client connection."""
 
-    # get the username from the user and send out a welcome message
     username = client.recv(BUFSIZ).decode("utf8")
-    welcome = f"Welcome {username}! If you ever want to quit, type '"+"{quit}"+"' to exit."
+    welcome = f"[MSG] Welcome {username}! If you ever want to quit, type '"+"{quit}"+"' to exit."
     client.send(bytes(welcome, "utf8"))
 
     # tell everyone that the user joined the chat
@@ -50,6 +55,7 @@ def handle_client(client):  # Takes client socket as argument.
 
         # if the message is not quit then send msg
         if msg != bytes("{quit}", "utf8") or msg != bytes("{serverQuit}", "utf8"):
+            
             broadcast(msg, username+": ")
         
         # if the message is for the server to shutdown
@@ -61,7 +67,7 @@ def handle_client(client):  # Takes client socket as argument.
         # if the message is quit then
         else:
             # close the client conection
-            client.send(bytes("{quit}", "utf8"))
+            client.send(bytes("[MSG] {quit}", "utf8"))
             client.close()
             del clients[client]
 
@@ -72,8 +78,13 @@ def handle_client(client):  # Takes client socket as argument.
             break
 
 
-def broadcast(msg, prefix=""):  # prefix is for name identification.
+def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     """Broadcasts a message to all the clients."""
+
+    # add the send note "[MSG] " to prefix before sending
+    # this is used to tell if it is a message or a diffrent data type
+    if msgTF == True:
+        prefix = "[MSG] " + prefix
 
     # sends a message to all users
     for sock in clients:
@@ -90,98 +101,3 @@ if __name__ == "__main__":
     ACCEPT_THREAD.join()
     SERVER.close()
 
-
-"""
-import socket
-
-IP = socket.gethostbyname(socket.gethostname())
-PORT = 65432
-BUFFER = 1024
-
-def server():
-    global IP, PORT
-
-    # makeing a users dictonary
-    users = {}
-
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-        server.bind((IP, PORT))
-        server.listen()
-        connected, ip = server.accept()
-        
-        recivedData = connected.recv(BUFFER)
-        recivedData = str(repr(recivedData)).replace("b'", "").replace("'", "")
-
-        users[recivedData] = ip
-
-        with connected:
-            print(f"{recivedData} conected to the server at: (ip: {ip[0]}, port: {ip[0]})")
-
-            run = True
-            i = 0
-            while run:
-                recivedData = connected.recv(BUFFER)
-                if str(recivedData) != "b''":
-                    recivedData = str(repr(recivedData)).replace("b'", "").replace("'", "")
-                    if recivedData != "HEARTBEAT":
-                        print(f"{recivedData}")
-
-                        # if our input is SERVER EXIT then it will close the server down
-                        if recivedData == "SERVER EXIT":
-                            run = False
-                            print("Exiting Program")
-                        i += 1
-                        connected.sendall(bytes(str(i), "utf-8"))
-                    
-                    # this is a heartbeat response back to the server
-                    else:
-                        print("[NOTE] 'HEARTBEAT' recived")
-                        i = 0
-
-
-def client():
-    global IP, PORT
-
-    # connect to the ip and port
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-        client.connect((IP, PORT))
-        client.sendall(bytes(str(input("What is your username?\nMy username is: ")), "utf-8"))
-        spacing = 28
-        
-        run = True
-        while run:
-            # add some line spacing
-            print("\n"*spacing)
-
-            # makeing sure it is a vaild input
-            sendMeOri = str(input("You: "))+"*//*"
-            while sendMeOri == "*//*":
-                print("\n"*spacing)
-                print("[ERROR] input not recognized")
-                sendMeOri = str(input("You: "))+"*//*"
-
-            sendMeOri = sendMeOri.replace("*//*", "")
-
-            # send the message
-            sendMe = bytes(sendMeOri, "utf-8")
-            client.sendall(sendMe)
-
-            # if the message is EXIT then end the program
-            if sendMeOri == "EXIT":
-                run = False
-
-            # check to see if heartbeat needs to be sent
-            recivedData = client.recv(BUFFER)
-            if str(recivedData) != "b''":
-                    recivedData = str(repr(recivedData)).replace("b'", "").replace("'", "")
-                    if int(recivedData) == 10:
-                        client.sendall(b"HEARTBEAT")
-
-chat = input("Do you want to chat?\nY/N: ")
-
-if chat == "N":
-    server()
-elif chat == "Y":
-    client()
-
-"""

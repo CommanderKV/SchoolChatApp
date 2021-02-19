@@ -12,7 +12,9 @@ def receive():
     while True:
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8")
-            msg_list.insert(tkinter.END, msg)
+            if "[MSG] " in msg:
+                msg_list.insert(tkinter.END, msg.replace("[MSG] ", ""))
+                msg_list.see("end")
         except OSError:  # Possibly client has left the chat.
             break
 
@@ -46,11 +48,18 @@ def on_closing(event=None):
     my_msg.set("{quit}")
     send(exitTF=True)
 
+
 def reset(event=None):
-    """Resets the input boxs text to nothing if the text is the same as the startng text"""
+    """Resets the input boxs text to nothing if the text is the same as the startng text."""
     # if the text is the same as the starting text
     if my_msg.get() == "Type your messages here.":
         my_msg.set("") # clear the entry_field
+
+
+def openScreenShareMenu(event=None):
+    import ScreenShareReciver
+    screen_share_thread = Thread(target=ScreenShareReciver.screenShareMain, args=(HOST, PORT,))
+    screen_share_thread.start()
 
 top = tkinter.Tk()
 top.title("School Chat")
@@ -77,9 +86,13 @@ entry_field.bind("<Return>", send)
 entry_field.bind("<Button-1>", reset)
 entry_field.pack(side=tkinter.LEFT, padx=10, pady=20, ipady=5)
 
-# mak and add a send button to the window
-send_button = tkinter.Button(top, text="Send", command=send)
-send_button.pack(side=tkinter.RIGHT, padx=70, pady=20)
+# make and add a screen share button
+screenshare = tkinter.Button(top, text="Screenshare", command=openScreenShareMenu, bg="white")
+screenshare.pack(side=tkinter.RIGHT, padx=10)
+
+# make and add a send button to the window
+send_button = tkinter.Button(top, text="Send", command=send, bg="white")
+send_button.pack(side=tkinter.RIGHT, padx=20, pady=20)
 
 top.protocol("WM_DELETE_WINDOW", on_closing)
 
