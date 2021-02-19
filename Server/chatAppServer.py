@@ -1,16 +1,15 @@
 """Server for multithreaded (asynchronous) chat application."""
 from socket import AF_INET, socket, SOCK_STREAM, gethostbyname, gethostname
-from requests import get as ipGet
 from threading import Thread
 
 clients = {}
 addresses = {}
 
-HOST = "0.0.0.0"#gethostbyname(gethostname())#ipGet("https://api.ipify.org").text
+HOST = "0.0.0.0"
 PORT = 80
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
-print(ADDR)
+print(f"Connect to IP: {gethostbyname(gethostname())}, PORT: {PORT}")
 
 def accept_incoming_connections():
     """Sets up handling for incoming clients."""

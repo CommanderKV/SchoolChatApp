@@ -84,7 +84,6 @@ send_button.pack(side=tkinter.RIGHT, padx=70, pady=20)
 top.protocol("WM_DELETE_WINDOW", on_closing)
 
 #----Now comes the sockets part----
-print(requests.get("https://api.ipify.org").text)
 HOST = input('Enter host: ')
 PORT = input('Enter port: ')
 if not PORT:
