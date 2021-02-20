@@ -3,11 +3,12 @@ from threading import Thread
 from zlib import compress
 from mss import mss
 from PIL import Image
-import ScreenShareGUI as GUI
 
 
 WIDTH = 1900
 HEIGHT = 1000
+RECT = {"top": 0, "left": 0, "width": WIDTH, "height": HEIGHT}
+
 
 
 def main(host="0.0.0.0", port=80):
@@ -46,14 +47,11 @@ def send_img(img, sender):
     sender.sendall(pixels)
 
 def screenshare_picture_taker(sender):
-
+    import ScreenShareGUI as GUI
     with mss() as sct:
-        # the region to capture the screenshot
-        rect = {"top": 0, "left": 0, "width": WIDTH, "height": HEIGHT}
-
         while GUI.Sharing_Screen:
             # capture the screen
-            img = sct.grab(rect)
+            img = sct.grab(RECT)
             send_img(img, sender)
 
            

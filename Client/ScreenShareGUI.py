@@ -1,10 +1,12 @@
 import pygame
 from socket import socket
 import ScreenShareSender as sender
+from mss import mss
 #import chatAppClient as Client
 from threading import Thread
+from PIL import Image
 
-class button():
+class Button():
     def __init__(self, color, x, y, width, height, text='', function=None, args=None):
         self.color = color
         self.x = x
@@ -35,7 +37,32 @@ class button():
             
         return False
 
-class screen(pygame.Surface):
+
+class screenshare(pygame.Surface):
+    def __init__(self, x, y, thisPc=True, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.thisPc = thisPc
+        self.x = x
+        self.y = y
+    
+    def draw(self, win):
+        if self.thisPc is True:
+            with mss() as sct:
+                width = self.get_size()[0]
+                height = self.get_size()[1]
+
+                rect = sender.RECT
+                img = sct.grab(rect)
+                image = Image.frombytes("RGB", img.size, img.bgra, "raw", "BGRX")
+                image.resize((width, height))
+                pixels = bytes(image.getdata())
+                img = pygame.image.fromstring(pixels, (width, height))
+                self.blit(img, (0, 0))
+        
+        win.blit(self, (self.x, self.y))
+
+
+class Screen(pygame.Surface):
     def __init__(self, backgroundColor, topic, buttons=[], screenshares=[], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.buttons = buttons
@@ -54,7 +81,8 @@ class screen(pygame.Surface):
         
         # draw each screen share if there are any
         if len(self.screenshares) > 0:
-            pass
+            for ScreenShare in self.screenshares:
+                ScreenShare.draw(self)
         
         # add screen to win
         win.blit(self, (0, 0))
@@ -80,73 +108,150 @@ def winUpdate(win, screens):
 pygame.font.init()
 pygame.init()
 SIZE = (600, 500)
-WIN = pygame.display.set_mode(SIZE)
-clock = pygame.time.Clock()
-Sharing_Screen = False
 screens = []
+Sharing_Screen = False
+OnOff = False
+Live = False
+TIMER = 0
+RUN = True
 
-MainMenuButtons = [
-    button(
-        (255, 0, 0), # color
-        50, # x
-        int(WIN.get_height()/2), # y
-        150, # width
-        30, # height
-        "View Screens" # text
-    ),
+def Main():
+    global TIMER, RUN, Live, OnOFF, Sharing_Screen, screens
+    WIN = pygame.display.set_mode(SIZE)
+    clock = pygame.time.Clock()
 
-    button(
-        (255, 0, 0), # color
-        int(WIN.get_width()-(50 + 180)), # x
-        int(WIN.get_height()/2), # y
-        180, # width
-        30, # height
-        "Sharing controls", # text
-        function=switchScreenTo, # function
-        args="screen share options" # args
-    ),
+    MainMenuButtons = [
+        Button(
+            (255, 0, 0), # color
+            50, # x
+            int(WIN.get_height()/2), # y
+            150, # width
+            30, # height
+            "View Screens", # text
+            function=switchScreenTo, # function
+            args="view screen shares" # args
+        ),
 
-    button(
-        (255, 0, 0), # color 
-        int(WIN.get_width()/2)-int((80/2)+15), # x
-        int(WIN.get_height()/2)+int(30*5), # y
-        80, # width
-        30, # height
-        "Quit", # text
-        function=quit # function
+        Button(
+            (255, 0, 0), # color
+            int(WIN.get_width()-(50 + 180)), # x
+            int(WIN.get_height()/2), # y
+            180, # width
+            30, # height
+            "Sharing controls", # text
+            function=switchScreenTo, # function
+            args="screen share options" # args
+        ),
+
+        Button(
+            (255, 0, 0), # color 
+            int(WIN.get_width()/2)-int((80/2)+15), # x
+            int(WIN.get_height()/2)+int(30*5), # y
+            80, # width
+            30, # height
+            "Quit", # text
+            function=quit # function
+        )
+    ]
+
+    MainMenuScreen = Screen((69, 189, 60), "MAIN MENU", buttons=MainMenuButtons, size=SIZE)
+    screens.append(MainMenuScreen)
+
+    ViewScreensButtons = [
+        Button(
+            (255, 0, 0), # color
+            0, # x
+            0, # y
+            100, # width
+            30, # height
+            "Back", # text
+            function=switchScreenTo, # function
+            args="main menu" # args
+        )
+    ]
+
+    ViewScreensScreen = Screen((69, 189, 60), "VIEW SCREEN SHARES", buttons=ViewScreensButtons, size=SIZE)
+    screens.append(ViewScreensScreen)
+    ViewScreensScreen.active = False
+
+    ScreenShareControlScreenSpacing = 20
+    ScreenShareButtons = [
+        Button(
+            (255, 0, 0), # color
+            int(WIN.get_width()-(150+ScreenShareControlScreenSpacing)), # x
+            int(WIN.get_height()-((30+ScreenShareControlScreenSpacing)+(30+ScreenShareControlScreenSpacing))), # y
+            150, # width
+            30, # height
+            "Start sharing" # text
+        ),
+
+        Button(
+            (255, 0, 0), # color
+            int(WIN.get_width()-(150+ScreenShareControlScreenSpacing)), # x
+            int(WIN.get_height()-(30+ScreenShareControlScreenSpacing)), # y
+            150, # width
+            30, # height
+            "Stop sharing" # text
+        ), 
+
+        Button(
+            (255, 0, 0), # color
+            ScreenShareControlScreenSpacing, # x
+            int(WIN.get_height()-(30+ScreenShareControlScreenSpacing)), # y
+            100, # width
+            30, # height
+            "Back", # text
+            function=switchScreenTo, # function
+            args="main menu" # args
+        )
+    ]
+
+    ScreenShareScreens = [
+        screenshare(
+            ScreenShareControlScreenSpacing, # x
+            ScreenShareControlScreenSpacing, # y
+            size=(500, 400)
+        )
+    ]
+
+    ScreenShareControlScreen = Screen(
+        (69, 189, 60), # color
+        "SCREEN SHARE OPTIONS", # mode
+        buttons=ScreenShareButtons, # buttons
+        screenshares=ScreenShareScreens, # screens
+        size=SIZE # size
     )
-]
+    screens.append(ScreenShareControlScreen)
+    ScreenShareControlScreen.active = False
+    # screenShareThread = Thread(target=sender.main, args=(Client.HOST, Client.PORT,))
 
-MainMenuScreen = screen((69, 189, 60), "MAIN MENU", buttons=MainMenuButtons, size=SIZE)
-screens.append(MainMenuScreen)
+    while RUN:
+        clock.tick(60)
 
-ScreenShareButtons = [
-    button((0, 255, 0), 50, 50, 150, 30, "Start sharing"),
-    button((255, 0, 0), 100, 100, 150, 30, "Stop sharing")
-]
-ScreenShareControlScreen = screen((69, 189, 60), "SCREEN SHARE OPTIONS", buttons=ScreenShareButtons, size=SIZE)
-screens.append(ScreenShareControlScreen)
-ScreenShareControlScreen.active = False
-# screenShareThread = Thread(target=sender.main, args=(Client.HOST, Client.PORT,))
+        if pygame.time.get_ticks()-TIMER > 1000:
+            TIMER = pygame.time.get_ticks()
+            if Live is True:
+                OnOff = True if OnOff == False else False
+                if OnOff is True:
+                    ScreenShareControlScreen.buttons[0].color = (0, 255, 0)
+                else:
+                    ScreenShareControlScreen.buttons[0].color = (255, 0, 0)
 
-run = True
-while run:
-    clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                for screen in screens:
+                    if screen.active is True:
+                        for button in screen.buttons:
+                            if button.isOver(pygame.mouse.get_pos()) is True:
+                                button.function(button.args) if button.args != None else button.function()
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
         
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            for screen in screens:
-                if screen.active is True:
-                    for button in screen.buttons:
-                        if button.isOver(pygame.mouse.get_pos()) is True:
-                            button.function(button.args) if button.args != None else button.function()
+        # update the window
+        winUpdate(WIN, screens)
 
-    
-    # update the window
-    winUpdate(WIN, screens)
+    quit()
 
-quit()
-
+Main()
