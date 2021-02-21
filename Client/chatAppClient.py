@@ -20,7 +20,7 @@ def receive():
             break
 
 
-def send(event=None, exitTF=False):  # event is passed by binders.
+def send(event=None):  # event is passed by binders.
     """Handles sending of messages."""
     # get the text in the tkinter input
     msg = my_msg.get()
@@ -33,6 +33,7 @@ def send(event=None, exitTF=False):  # event is passed by binders.
     if msg == "{quit}":
         client_socket.close()
         top.quit()
+        quit()
 
 
 def on_closing(event=None):
@@ -40,7 +41,7 @@ def on_closing(event=None):
 
     # when window is close send a quit message to the server as well
     my_msg.set("{quit}")
-    send(exitTF=True)
+    send()
 
 
 def reset(event=None):
