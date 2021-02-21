@@ -278,7 +278,7 @@ def Main(addr):
         screenshares=ScreenShareScreens, # screens
         size=SIZE # size
     )
-    
+
     screens.append(ScreenShareControlScreen)
     ScreenShareControlScreen.active = False
 

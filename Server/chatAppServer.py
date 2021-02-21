@@ -31,10 +31,17 @@ def accept_incoming_connections():
         sending_screenshare = f"[SCREENSHARE_{client_address[0]}_S]"
         amount_screenshare = f"[SCREENSHARE_{client_address[0]}_A]"
 
+        ScreenShareUsernames = [
+            reciveing_screenshare,
+            sending_screenshare,
+            amount_screenshare
+        ]
+
         # get the username from the user and send out a welcome message if
         # the user is not a screenshare account 
         username = client.recv(BUFSIZ).decode("utf8")
-        if username != reciveing_screenshare and username != sending_screenshare:
+        print(username)
+        if username not in ScreenShareUsernames:
 
             # send welcome message
             welcome = f"[MSG] Welcome {username}! If you ever want to quit, type '"+"{quit}"+"' to exit."
