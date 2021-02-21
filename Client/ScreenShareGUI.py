@@ -2,7 +2,7 @@ import pygame
 from socket import socket, gethostname, gethostbyname
 import ScreenShareSender as sender
 from mss import mss
-from threading import Thread
+from threading import Thread, Condition
 from PIL import Image
 
 class Button():
@@ -111,44 +111,54 @@ def winUpdate(win, screens):
     pygame.display.update()
 
 def updateViewScreensScreens(ViewScreensPadding, host, port):
-    global screens
+    import time
+    global screens, OPEN
 
-    updatedScreens = []
-    x = ViewScreensPadding
-    y = int(ViewScreensPadding*2)+30
-    
-    # make a socket and connect to the server
-    guiSocket = socket()
-    guiSocket.connect((host, port))
-    guiSocket.recv(1024)
+    while OPEN:
+        sharedVars.acquire()
+        if screens[1].active == True:
 
-    ip = gethostbyname(gethostname())
+            updatedScreens = []
+            x = ViewScreensPadding
+            y = int(ViewScreensPadding*2)+30
+            
+            # make a socket and connect to the server
+            guiSocket = socket()
+            guiSocket.connect((host, port))
+            guiSocket.recv(1024)
 
-    # ask for the Amount of screens that are being shared
-    guiSocket.sendall(bytes(f"[SCREENSHARE_{ip}_A]", "utf-8"))
+            ip = gethostbyname(gethostname())
 
-    # get the amount of screens
-    Amount = int(guiSocket.recv(1024).decode("utf-8"))
+            # ask for the Amount of screens that are being shared
+            guiSocket.sendall(bytes(f"[SCREENSHARE_{ip}_A]", "utf-8"))
 
-    sizes = (
-        int(SIZE[0]/3), 
-        int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)/3)
-    )
+            # get the amount of screens
+            Amount = int(guiSocket.recv(1024).decode("utf-8"))
 
-    for i in range(Amount):
-        updatedScreens.append(
-            screenshare(
-                x,
-                y,
-                size=sizes,
-                thisPc=False
+            sizes = (
+                int(SIZE[0]/3), 
+                int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)/3)
             )
-        )
-        x = (x + (sizes[0] + ViewScreensPadding)) if i != 3 or i != 6 or i != 9 else ViewScreensPadding
-        y += (sizes[1]+ViewScreensPadding) if i == 3 or i == 6 or i == 9 else 0
 
-    screens[1].screenshares = updatedScreens
+            for i in range(Amount):
+                updatedScreens.append(
+                    screenshare(
+                        x,
+                        y,
+                        size=sizes,
+                        thisPc=False
+                    )
+                )
+                x = (x + (sizes[0] + ViewScreensPadding)) if i != 3 or i != 6 or i != 9 else ViewScreensPadding
+                y += (sizes[1]+ViewScreensPadding) if i == 3 or i == 6 or i == 9 else 0
 
+            screens[1].screenshares = updatedScreens
+
+            time.sleep(10)
+
+        sharedVars.release()
+
+sharedVars = Condition()
 pygame.font.init()
 SIZE = (600, 500)
 screens = []
@@ -157,9 +167,10 @@ OnOff = False
 Live = False
 TIMER = 0
 RUN = True
+OPEN = True
 
 def Main(addr):
-    global TIMER, RUN, Live, OnOFF, Sharing_Screen, screens
+    global TIMER, RUN, OPEN, Live, OnOFF, Sharing_Screen, screens
     
     host, port = addr
 
@@ -218,7 +229,6 @@ def Main(addr):
     ]
 
     ViewScreensScreens = []
-    updateViewScreensScreens(ViewScreensPadding, host, port)
 
     ViewScreensScreen = Screen(
         (69, 189, 60), 
@@ -230,6 +240,7 @@ def Main(addr):
 
     screens.append(ViewScreensScreen)
     ViewScreensScreen.active = False
+    Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,)).start()
 
     ScreenShareControlScreenSpacing = 20
     ScreenShareButtons = [
@@ -304,7 +315,6 @@ def Main(addr):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 RUN = False
-                quit()
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for screen in screens:
@@ -316,3 +326,5 @@ def Main(addr):
         
         # update the window
         winUpdate(WIN, screens)
+    
+    OPEN = False
