@@ -10,11 +10,11 @@ sending_screenshares = {}
 screenshares = {}
 addresses = {}
 
-HOST = str(gethostbyname(gethostname()))
-PORT = 80
+HOST = "0.0.0.0"
+PORT = 5050
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
-print(f"Connect to IP: {HOST}, PORT: {PORT}")
+print(f"Connect to IP: {gethostbyname(gethostname())}, PORT: {PORT}")
 
 def accept_incoming_connections():
     """Sets up handling for incoming clients."""
@@ -89,6 +89,7 @@ def handle_client(client, username):  # Takes client socket as argument.
 
     # tell everyone that the user joined the chat
     msg = f"{username} has joined the chat!"
+    print(len(clients))
     broadcast(bytes(msg, "utf8"))
 
     # add the user to the clients list
