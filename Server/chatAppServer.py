@@ -11,7 +11,7 @@ screenshares = {}
 addresses = {}
 
 HOST = str(gethostbyname(gethostname()))
-PORT = 809
+PORT = 80
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
 print(f"Connect to IP: {HOST}, PORT: {PORT}")
