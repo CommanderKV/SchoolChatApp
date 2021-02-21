@@ -114,47 +114,50 @@ def updateViewScreensScreens(ViewScreensPadding, host, port):
     import time
     global screens, OPEN
 
+    start = time.time()
+
     while OPEN:
         sharedVars.acquire()
+
         if screens[1].active == True:
+            if time.time() - start >= 10.0:
+                start = time.time()
 
-            updatedScreens = []
-            x = ViewScreensPadding
-            y = int(ViewScreensPadding*2)+30
-            
-            # make a socket and connect to the server
-            guiSocket = socket()
-            guiSocket.connect((host, port))
-            guiSocket.recv(1024)
+                updatedScreens = []
+                x = ViewScreensPadding
+                y = int(ViewScreensPadding*2)+30
+                
+                # make a socket and connect to the server
+                guiSocket = socket()
+                guiSocket.connect((host, port))
+                guiSocket.recv(1024)
 
-            ip = gethostbyname(gethostname())
+                ip = gethostbyname(gethostname())
 
-            # ask for the Amount of screens that are being shared
-            guiSocket.sendall(bytes(f"[SCREENSHARE_{ip}_A]", "utf-8"))
+                # ask for the Amount of screens that are being shared
+                guiSocket.sendall(bytes(f"[SCREENSHARE_{ip}_A]", "utf-8"))
 
-            # get the amount of screens
-            Amount = int(guiSocket.recv(1024).decode("utf-8"))
+                # get the amount of screens
+                Amount = int(guiSocket.recv(1024).decode("utf-8"))
 
-            sizes = (
-                int(SIZE[0]/3), 
-                int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)/3)
-            )
-
-            for i in range(Amount):
-                updatedScreens.append(
-                    screenshare(
-                        x,
-                        y,
-                        size=sizes,
-                        thisPc=False
-                    )
+                sizes = (
+                    int(SIZE[0]/3), 
+                    int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)/3)
                 )
-                x = (x + (sizes[0] + ViewScreensPadding)) if i != 3 or i != 6 or i != 9 else ViewScreensPadding
-                y += (sizes[1]+ViewScreensPadding) if i == 3 or i == 6 or i == 9 else 0
 
-            screens[1].screenshares = updatedScreens
+                for i in range(Amount):
+                    updatedScreens.append(
+                        screenshare(
+                            x,
+                            y,
+                            size=sizes,
+                            thisPc=False
+                        )
+                    )
+                    x = (x + (sizes[0] + ViewScreensPadding)) if i != 3 or i != 6 or i != 9 else ViewScreensPadding
+                    y += (sizes[1]+ViewScreensPadding) if i == 3 or i == 6 or i == 9 else 0
 
-            time.sleep(10)
+                screens[1].screenshares = updatedScreens
 
         sharedVars.release()
 
