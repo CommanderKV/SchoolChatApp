@@ -158,9 +158,11 @@ Live = False
 TIMER = 0
 RUN = True
 
-def Main(host, port):
+def Main(addr):
     global TIMER, RUN, Live, OnOFF, Sharing_Screen, screens
     
+    host, port = addr
+
     WIN = pygame.display.set_mode(SIZE)
     clock = pygame.time.Clock()
 
@@ -276,6 +278,7 @@ def Main(host, port):
         screenshares=ScreenShareScreens, # screens
         size=SIZE # size
     )
+    
     screens.append(ScreenShareControlScreen)
     ScreenShareControlScreen.active = False
 

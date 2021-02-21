@@ -2,6 +2,7 @@
 from socket import AF_INET, socket, SOCK_STREAM, gethostname, gethostbyname
 import requests
 from threading import Thread
+import ScreenShareGUI as SShareGUI
 import tkinter
 
 
@@ -57,8 +58,7 @@ def reset(event=None):
 
 
 def startScreenShareMenu():
-    import ScreenShareGUI as SShareGUI
-    SShareGUI.Main(HOST, PORT)
+    SShareGUI.Main(ADDR)
 
 def openScreenShareMenu(event=None):
     Thread(target=startScreenShareMenu).start()
