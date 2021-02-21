@@ -304,10 +304,6 @@ def Main(addr):
         if pygame.time.get_ticks()-TIMER > 1000:
             TIMER = pygame.time.get_ticks()
 
-            # if view screen is active then we can update the amoount of screens
-            if screens[1].active == True:
-                updateViewScreensScreens(ViewScreensPadding, host, port)
-
             # if we are shareing our screen then chacge the live color box to say hey were live
             if Live is True:
                 OnOff = True if OnOff == False else False
