@@ -1,6 +1,5 @@
 from socket import socket, AF_INET, SOCK_STREAM, gethostbyname, gethostname
 from threading import Thread
-import chatAppClient as Client
 from zlib import compress
 from mss import mss
 from PIL import Image

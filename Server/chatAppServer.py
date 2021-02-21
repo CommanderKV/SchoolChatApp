@@ -10,11 +10,11 @@ sending_screenshares = {}
 screenshares = {}
 addresses = {}
 
-HOST = "0.0.0.0"
-PORT = 80
+HOST = str(gethostbyname(gethostname()))
+PORT = 809
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
-print(f"Connect to IP: {gethostbyname(gethostname())}, PORT: {PORT}")
+print(f"Connect to IP: {HOST}, PORT: {PORT}")
 
 def accept_incoming_connections():
     """Sets up handling for incoming clients."""
