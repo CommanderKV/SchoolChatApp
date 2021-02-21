@@ -1,8 +1,8 @@
 import pygame
-from socket import socket
+from socket import socket, gethostname, gethostbyname
 import ScreenShareSender as sender
 from mss import mss
-#import chatAppClient as Client
+import chatAppClient as Client
 from threading import Thread
 from PIL import Image
 
@@ -44,8 +44,10 @@ class screenshare(pygame.Surface):
         self.thisPc = thisPc
         self.x = x
         self.y = y
+        self.bg = (0, 0, 0)
     
     def draw(self, win):
+        self.fill(self.bg)
         if self.thisPc is True:
             with mss() as sct:
                 width = self.get_size()[0]
@@ -54,9 +56,12 @@ class screenshare(pygame.Surface):
                 rect = sender.RECT
                 img = sct.grab(rect)
                 image = Image.frombytes("RGB", img.size, img.bgra, "raw", "BGRX")
-                image.resize((width, height))
-                pixels = bytes(image.getdata())
-                img = pygame.image.fromstring(pixels, (width, height))
+                image = image.resize((width, height))
+
+                pixels = image.tobytes("raw", "RGB")
+                size = (width, height)
+
+                img = pygame.image.fromstring(pixels, size, "RGB")
                 self.blit(img, (0, 0))
         
         win.blit(self, (self.x, self.y))
@@ -87,6 +92,7 @@ class Screen(pygame.Surface):
         # add screen to win
         win.blit(self, (0, 0))
 
+
 def switchScreenTo(screentopic):
     for screen in screens:
         if screen.topic == screentopic.upper():
@@ -104,6 +110,45 @@ def winUpdate(win, screens):
 
     # update the pygame window
     pygame.display.update()
+
+def updateViewScreensScreens(ViewScreensPadding):
+    global screens
+
+    updatedScreens = []
+    x = ViewScreensPadding
+    y = int(ViewScreensPadding*2)+30
+    
+    # make a socket and connect to the server
+    guiSocket = socket()
+    guiSocket.connect((Client.HOST, Client.PORT))
+    guiSocket.recv(1024)
+
+    ip = gethostbyname(gethostname())
+
+    # ask for the Amount of screens that are being shared
+    guiSocket.sendall(bytes(f"[SCREENSHARE_{ip}_A]", "utf-8"))
+
+    # get the amount of screens
+    Amount = int(guiSocket.recv(1024).decode("utf-8"))
+
+    sizes = (
+        int(SIZE[0]/3), 
+        int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)/3)
+    )
+
+    for i in range(Amount):
+        updatedScreens.append(
+            screenshare(
+                x,
+                y,
+                size=sizes,
+                thisPc=False
+            )
+        )
+        x = (x + (sizes[0] + ViewScreensPadding)) if i != 3 or i != 6 or i != 9 else ViewScreensPadding
+        y += (sizes[1]+ViewScreensPadding) if i == 3 or i == 6 or i == 9 else 0
+
+    screens[1].screenshares = updatedScreens
 
 pygame.font.init()
 pygame.init()
@@ -157,11 +202,12 @@ def Main():
     MainMenuScreen = Screen((69, 189, 60), "MAIN MENU", buttons=MainMenuButtons, size=SIZE)
     screens.append(MainMenuScreen)
 
+    ViewScreensPadding = 20
     ViewScreensButtons = [
         Button(
             (255, 0, 0), # color
-            0, # x
-            0, # y
+            ViewScreensPadding, # x
+            ViewScreensPadding, # y
             100, # width
             30, # height
             "Back", # text
@@ -169,6 +215,16 @@ def Main():
             args="main menu" # args
         )
     ]
+
+    ViewScreensScreens = [
+        screenshare(
+            ViewScreensPadding, # x
+            int(ViewScreensPadding*2)+30, # y
+            size=(int(SIZE[0]/3), int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)/3)), # size
+            thisPc=False
+        )
+    ]
+    
 
     ViewScreensScreen = Screen((69, 189, 60), "VIEW SCREEN SHARES", buttons=ViewScreensButtons, size=SIZE)
     screens.append(ViewScreensScreen)
@@ -210,7 +266,7 @@ def Main():
         screenshare(
             ScreenShareControlScreenSpacing, # x
             ScreenShareControlScreenSpacing, # y
-            size=(500, 400)
+            size=(WIN.get_width()-(ScreenShareControlScreenSpacing*2), 370)
         )
     ]
 
@@ -227,6 +283,7 @@ def Main():
 
     while RUN:
         clock.tick(60)
+        pygame.display.set_caption("Screen Sharing")
 
         if pygame.time.get_ticks()-TIMER > 1000:
             TIMER = pygame.time.get_ticks()
@@ -240,6 +297,7 @@ def Main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+                quit()
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for screen in screens:
@@ -251,7 +309,4 @@ def Main():
         
         # update the window
         winUpdate(WIN, screens)
-
-    quit()
-
 Main()

@@ -1,5 +1,6 @@
-from socket import socket
+from socket import socket, AF_INET, SOCK_STREAM, gethostbyname, gethostname
 from threading import Thread
+import chatAppClient as Client
 from zlib import compress
 from mss import mss
 from PIL import Image
@@ -10,7 +11,6 @@ HEIGHT = 1000
 RECT = {"top": 0, "left": 0, "width": WIDTH, "height": HEIGHT}
 
 
-
 def main(host="0.0.0.0", port=80):
 
     # setup the sending socket
@@ -19,8 +19,10 @@ def main(host="0.0.0.0", port=80):
 
     sender.recv(1024)
 
+    ip = gethostbyname(gethostname())
+
     # tell the server that im a screenshare account
-    sender.sendall(bytes(f"[SCREENSHARE_{host}_S]", "utf-8"))
+    sender.sendall(bytes(f"[SCREENSHARE_{ip}_S]", "utf-8"))
 
     # start the main process
     screenshare_picture_taker(sender)
@@ -31,7 +33,7 @@ def send_img(img, sender):
     # compression level can be 0-9
     image = Image.frombytes("RGB", img.size, img.bgra, "raw", "BGRX")
     image.resize((600, 600))
-    pixels = bytes(image.getdata())
+    pixels = bytes(image.tobytes("raw", "RGB"), "utf-8")
     pixels = compress(pixels, 6)
 
     # send the size of pixels length

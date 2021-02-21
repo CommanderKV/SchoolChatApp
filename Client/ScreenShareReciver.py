@@ -1,4 +1,5 @@
-from socket import socket
+from socket import socket, gethostbyname, gethostname
+import chatAppClient as Client
 from zlib import decompress
 import pygame
 
@@ -27,7 +28,9 @@ def screenShareMain(host="0.0.0.0", port=80):
 
     reciver.recv(1024)
 
-    reciver.sendall(bytes(f"[SCREENSHARE_{host}_R]", "utf-8"))
+    ip = gethostbyname(gethostname())
+
+    reciver.sendall(bytes(f"[SCREENSHARE_{ip}_R]", "utf-8"))
 
     try:
         while watching:
