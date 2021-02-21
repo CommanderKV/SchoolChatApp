@@ -22,24 +22,17 @@ def receive():
 
 def send(event=None, exitTF=False):  # event is passed by binders.
     """Handles sending of messages."""
-    try:
-        # get the text in the tkinter input
-        msg = my_msg.get()
-        my_msg.set("")  # Clears input field.
+    # get the text in the tkinter input
+    msg = my_msg.get()
+    my_msg.set("")  # Clears input field.
 
-        # send the message to the server
-        client_socket.send(bytes(msg, "utf8"))
+    # send the message to the server
+    client_socket.send(bytes(msg, "utf8"))
 
-        # if message is to quit then quit
-        if msg == "{quit}":
-            client_socket.close()
-            top.quit()
-    
-    # if we try to close before we are conected then exit
-    except:
-        if exitTF == True:
-            top.quit()
-            quit()
+    # if message is to quit then quit
+    if msg == "{quit}":
+        client_socket.close()
+        top.quit()
 
 
 def on_closing(event=None):
