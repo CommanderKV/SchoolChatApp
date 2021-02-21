@@ -243,7 +243,6 @@ def Main(addr):
 
     screens.append(ViewScreensScreen)
     ViewScreensScreen.active = False
-    Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,)).start()
 
     ScreenShareControlScreenSpacing = 20
     ScreenShareButtons = [
@@ -295,6 +294,8 @@ def Main(addr):
 
     screens.append(ScreenShareControlScreen)
     ScreenShareControlScreen.active = False
+
+    Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,)).start()
 
     while RUN:
         clock.tick(60)
