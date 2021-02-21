@@ -1,10 +1,4 @@
 """Server for multithreaded (asynchronous) chat application."""
-import sys
-import os
-path = os.getcwd()
-sys.path.insert(0, str(path).replace("Server", "Client"))
-
-import ScreenShareReciver as SReciver
 from socket import AF_INET, socket, SOCK_STREAM, gethostbyname, gethostname
 from threading import Thread
 import pygame
@@ -13,6 +7,7 @@ import pygame
 clients = {}
 reciveing_screenshares = {}
 sending_screenshares = {}
+screenshares = {}
 addresses = {}
 
 HOST = "0.0.0.0"
@@ -68,23 +63,26 @@ def accept_incoming_connections():
 
             # start a thread to handle sending screenshare accounts
             Thread(target=handle_sending_screenshare, args=(client,)).start()
+        
+        # if the account is requesting the amount of screens give it to them
+        elif username == amount_screenshare:
+
+            # get the amount of current screenshares
+            amount = bytes(str(len(screenshares)), "utf-8")
+
+            # send back the requested data
+            client.sendall(amount)
 
 
 def handle_sending_screenshare(client):
     """Handling each sending ScreenShare account"""
     # client is a socket conection
     
-    SReciver.screenShareMain()
-
 
 def handle_reciveing_screenshare(client):
     # client is a socket conection
+    pass
     
-    SReciver.screenShareMain(
-        reciveing_screenshares[client][0], 
-        reciveing_screenshares[client][1]
-    )
-
 
 def handle_client(client, username):  # Takes client socket as argument.
     """Handles a single client connection."""

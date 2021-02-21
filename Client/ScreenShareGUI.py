@@ -2,7 +2,6 @@ import pygame
 from socket import socket, gethostname, gethostbyname
 import ScreenShareSender as sender
 from mss import mss
-import chatAppClient as Client
 from threading import Thread
 from PIL import Image
 
@@ -111,7 +110,7 @@ def winUpdate(win, screens):
     # update the pygame window
     pygame.display.update()
 
-def updateViewScreensScreens(ViewScreensPadding):
+def updateViewScreensScreens(ViewScreensPadding, host, port):
     global screens
 
     updatedScreens = []
@@ -120,7 +119,7 @@ def updateViewScreensScreens(ViewScreensPadding):
     
     # make a socket and connect to the server
     guiSocket = socket()
-    guiSocket.connect((Client.HOST, Client.PORT))
+    guiSocket.connect((host, port))
     guiSocket.recv(1024)
 
     ip = gethostbyname(gethostname())
@@ -151,7 +150,6 @@ def updateViewScreensScreens(ViewScreensPadding):
     screens[1].screenshares = updatedScreens
 
 pygame.font.init()
-pygame.init()
 SIZE = (600, 500)
 screens = []
 Sharing_Screen = False
@@ -160,8 +158,9 @@ Live = False
 TIMER = 0
 RUN = True
 
-def Main():
+def Main(host, port):
     global TIMER, RUN, Live, OnOFF, Sharing_Screen, screens
+    
     WIN = pygame.display.set_mode(SIZE)
     clock = pygame.time.Clock()
 
@@ -216,17 +215,17 @@ def Main():
         )
     ]
 
-    ViewScreensScreens = [
-        screenshare(
-            ViewScreensPadding, # x
-            int(ViewScreensPadding*2)+30, # y
-            size=(int(SIZE[0]/3), int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)/3)), # size
-            thisPc=False
-        )
-    ]
-    
+    ViewScreensScreens = []
+    updateViewScreensScreens(ViewScreensPadding, host, port)
 
-    ViewScreensScreen = Screen((69, 189, 60), "VIEW SCREEN SHARES", buttons=ViewScreensButtons, size=SIZE)
+    ViewScreensScreen = Screen(
+        (69, 189, 60), 
+        "VIEW SCREEN SHARES", 
+        buttons=ViewScreensButtons, 
+        screenshares=ViewScreensScreens, 
+        size=SIZE
+    )
+
     screens.append(ViewScreensScreen)
     ViewScreensScreen.active = False
 
@@ -279,7 +278,6 @@ def Main():
     )
     screens.append(ScreenShareControlScreen)
     ScreenShareControlScreen.active = False
-    # screenShareThread = Thread(target=sender.main, args=(Client.HOST, Client.PORT,))
 
     while RUN:
         clock.tick(60)
@@ -287,6 +285,12 @@ def Main():
 
         if pygame.time.get_ticks()-TIMER > 1000:
             TIMER = pygame.time.get_ticks()
+
+            # if view screen is active then we can update the amoount of screens
+            if screens[1].active == True:
+                updateViewScreensScreens(ViewScreensPadding, host, port)
+
+            # if we are shareing our screen then chacge the live color box to say hey were live
             if Live is True:
                 OnOff = True if OnOff == False else False
                 if OnOff is True:
@@ -296,7 +300,7 @@ def Main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                RUN = False
                 quit()
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -309,4 +313,3 @@ def Main():
         
         # update the window
         winUpdate(WIN, screens)
-Main()

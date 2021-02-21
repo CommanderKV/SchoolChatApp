@@ -57,7 +57,8 @@ def reset(event=None):
 
 
 def startScreenShareMenu():
-    import ScreenShareGUI
+    import ScreenShareGUI as SShareGUI
+    SShareGUI.Main(HOST, PORT)
 
 def openScreenShareMenu(event=None):
     Thread(target=startScreenShareMenu).start()
