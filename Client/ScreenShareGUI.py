@@ -298,7 +298,7 @@ def Main(addr):
     Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,)).start()
 
     while RUN:
-        clock.tick(60)
+        clock.tick(120)
         pygame.display.set_caption("Screen Sharing")
 
         if pygame.time.get_ticks()-TIMER > 1000:

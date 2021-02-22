@@ -28,11 +28,13 @@ def send(event=None):  # event is passed by binders.
 
     # send the message to the server
     client_socket.send(bytes(msg, "utf8"))
-
+    print(0)
     # if message is to quit then quit
     if msg == "{quit}":
         client_socket.close()
+        print(1)
         top.quit()
+        print(2)
         quit()
 
 
