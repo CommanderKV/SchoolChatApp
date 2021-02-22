@@ -43,6 +43,8 @@ def on_closing(event=None):
     my_msg.set("{quit}")
     send()
     print(2)
+    top.quit()
+    print(3)
     quit()
 
 
