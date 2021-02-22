@@ -43,6 +43,7 @@ def send_img(img, sender):
     # send the size of pixels length
     size = len(pixels)
     size_len = (size.bit_length() + 7) // 8
+    print(size_len)
     sender.send(bytes([size_len]))
 
     # send the pixels length
