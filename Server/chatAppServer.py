@@ -104,7 +104,10 @@ def handle_sending_screenshare(client):
             break
 
         # get the size of the image
-        imsize = (int.from_bytes(client.recv(1024)), int.from_bytes(client.recv(1024)))
+        imsize = (
+            int.from_bytes(client.recv(1024), byteorder="big"), 
+            int.from_bytes(client.recv(1024), byteorder="big")
+        )
 
         # get data on the image
         size_len = int.from_bytes(client.recv(1), byteorder="big")
@@ -180,36 +183,40 @@ def handle_client(client, username):  # Takes client socket as argument.
     clients[client] = username
 
     while True:
-        # recive a message
-        msg = client.recv(BUFSIZ)
+        # recive a message  
+        try:
+            msg = client.recv(BUFSIZ)
+        except:
+            msg = None
 
-        # if the message is not quit then send msg
-        if msg != bytes("{quit}", "utf8") or msg != bytes("{serverQuit}", "utf8"):
-            try:
-                broadcast(msg, username+": ")
-            except:
+        if msg != None:
+            # if the message is not quit then send msg
+            if msg != bytes("{quit}", "utf8") or msg != bytes("{serverQuit}", "utf8"):
+                try:
+                    broadcast(msg, username+": ")
+                except:
+                    client.close()
+                    del clients[client]
+                    break
+            
+            # if the message is for the server to shutdown
+            elif msg == bytes("{serverQuit}", "utf8"):
                 client.close()
                 del clients[client]
+                quit()
+
+            # if the message is quit then
+            else:
+                # close the client conection
+                client.send(bytes("[MSG] {quit}", "utf8"))
+                client.close()
+                del clients[client]
+
+                # tell everyone that they have left
+                broadcast(bytes(f"{username} has left the chat.", "utf8"))
+
+                # close their client down
                 break
-        
-        # if the message is for the server to shutdown
-        elif msg == bytes("{serverQuit}", "utf8"):
-            client.close()
-            del clients[client]
-            quit()
-
-        # if the message is quit then
-        else:
-            # close the client conection
-            client.send(bytes("[MSG] {quit}", "utf8"))
-            client.close()
-            del clients[client]
-
-            # tell everyone that they have left
-            broadcast(bytes(f"{username} has left the chat.", "utf8"))
-
-            # close their client down
-            break
 
 
 def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.

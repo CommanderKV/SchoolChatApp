@@ -33,7 +33,7 @@ def send_img(img, sender):
     imsize = (600, 600)
     image = Image.frombytes("RGB", img.size, img.bgra, "raw", "BGRX")
     image.resize(imsize)
-    pixels = bytes(image.tobytes("raw", "RGB"), "utf-8")
+    pixels = image.tobytes("raw", "RGB")
     pixels = compress(pixels, 6)
 
     # send the size of the image

@@ -250,7 +250,7 @@ RUN = True
 OPEN = True
 
 def Main(addr):
-    global TIMER, RUN, OPEN, Live, OnOFF, Sharing_Screen, screens
+    global TIMER, RUN, OPEN, Live, OnOff, Sharing_Screen, screens
     global host, port
 
     host, port = addr
