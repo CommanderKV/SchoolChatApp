@@ -78,6 +78,16 @@ class screenshare(pygame.Surface):
 
                 img = pygame.image.fromstring(pixels, size, "RGB")
                 self.blit(img, (0, 0))
+
+                text = self.font.render("Preview" if Live == False else "LIVE", 1, (255, 255, 255))
+                self.blit(
+                    text, 
+                    (
+                        (self.get_height()-(text.get_height()+10)), 
+                        (self.get_width()-(text.get_width()+10))
+                    )
+                )
+
         else:
             # tell the server the screenshare we want
             self.reciver.sendall(bytes([self.pos]))
