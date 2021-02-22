@@ -140,6 +140,23 @@ class Screen(pygame.Surface):
         # add screen to win
         win.blit(self, (0, 0))
 
+def startScreenShare(addr):
+    global Live, Sharing_Screen
+
+    # set live and sharing_screen to True
+    host, port = addr
+    Live = True
+    Sharing_Screen = True
+
+    # start a thread with the sending program on it
+    Thread(target=sender.main, args=(host, port,)).start()
+
+def stopScreenSharing():
+    global Live, Sharing_Screen
+
+    # set live and sharing_screen to False
+    Live = False
+    Sharing_Screen = False
 
 def switchScreenTo(screentopic):
     for screen in screens:
@@ -303,7 +320,9 @@ def Main(addr):
             int(WIN.get_height()-((30+ScreenShareControlScreenSpacing)+(30+ScreenShareControlScreenSpacing))), # y
             150, # width
             30, # height
-            "Start sharing" # text
+            "Start sharing", # text
+            function=startScreenShare, # function
+            args=(host, port) # args
         ),
 
         Button(
@@ -312,7 +331,8 @@ def Main(addr):
             int(WIN.get_height()-(30+ScreenShareControlScreenSpacing)), # y
             150, # width
             30, # height
-            "Stop sharing" # text
+            "Stop sharing", # text
+            function=stopScreenSharing # function
         ), 
 
         Button(
@@ -360,8 +380,10 @@ def Main(addr):
                 OnOff = True if OnOff == False else False
                 if OnOff is True:
                     ScreenShareControlScreen.buttons[0].color = (0, 255, 0)
+                    OnOff = False
                 else:
                     ScreenShareControlScreen.buttons[0].color = (255, 0, 0)
+                    OnOff = True
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -371,8 +393,9 @@ def Main(addr):
                 for screen in screens:
                     if screen.active is True:
                         for button in screen.buttons:
-                            if button.isOver(pygame.mouse.get_pos()) is True:
-                                button.function(button.args) if button.args != None else button.function()
+                            if button.function != None:
+                                if button.isOver(pygame.mouse.get_pos()) is True:
+                                    button.function(button.args) if button.args != None else button.function()
 
         
         # update the window
