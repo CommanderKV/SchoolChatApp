@@ -34,8 +34,6 @@ def send(event=None):  # event is passed by binders.
         client_socket.close()
         print(1)
         top.quit()
-        print(2)
-        quit()
 
 
 def on_closing(event=None):
@@ -44,6 +42,8 @@ def on_closing(event=None):
     # when window is close send a quit message to the server as well
     my_msg.set("{quit}")
     send()
+    print(2)
+    quit()
 
 
 def reset(event=None):

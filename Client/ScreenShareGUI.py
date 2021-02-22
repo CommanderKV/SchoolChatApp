@@ -3,6 +3,7 @@ from socket import socket, gethostname, gethostbyname
 import ScreenShareSender as sender
 from mss import mss
 from threading import Thread, Condition
+from zlib import decompress
 from PIL import Image
 
 class Button():
@@ -38,12 +39,27 @@ class Button():
 
 
 class screenshare(pygame.Surface):
-    def __init__(self, x, y, thisPc=True, *args, **kwargs):
+    def __init__(self, x, y, thisPc=True, pos=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.thisPc = thisPc
         self.x = x
         self.y = y
         self.bg = (0, 0, 0)
+        self.pos = pos
+        self.font = pygame.font.SysFont("comicsans", 20)
+        if self.thisPc == False:
+            global host, port
+
+            # make a socket
+            self.reciver = socket()
+            self.reciver.connect((host, port))
+
+            # recive the welcome message
+            self.reciver.recv(1024)
+
+            # tell the server that i am looking to recive data
+            ip = gethostbyname(gethostname())
+            self.reciver.sendall(bytes(f"[SCREENSHARE_{ip}_R]"), "utf-8")
     
     def draw(self, win):
         self.fill(self.bg)
@@ -62,6 +78,39 @@ class screenshare(pygame.Surface):
 
                 img = pygame.image.fromstring(pixels, size, "RGB")
                 self.blit(img, (0, 0))
+        else:
+            # tell the server the screenshare we want
+            self.reciver.sendall(bytes([self.pos]))
+
+            # tell the server that we are still here
+            self.reciver.sendall(bytes("True", "utf-8"))
+
+            # get the username from the server
+            username = self.reciver.recv(1024)
+
+            # get the pixels from the server
+            pixels = decompress(self.reciver.recv(1024))
+
+            # get the image size from the server
+            imsize1 = int.from_bytes(self.reciver.recv(1024))
+            imsize2 = int.from_bytes(self.reciver.recv(1024))
+            imsize = (imsize1, imsize2)
+
+            # get the type of image from the server
+            imType = self.reciver.recv(1024).decode("utf-8")
+
+            img = self.image.fromstring(pixels, imsize, imType)
+            self.blit(img, (0, 0))
+
+            text = self.font.render(username, 1, (255, 255, 255))
+            self.blit(
+                text, 
+                (
+                    (self.get_height()-(text.get_height()+10)), 
+                    (self.get_width()-(text.get_width()+10))
+                )
+            )
+
         
         win.blit(self, (self.x, self.y))
 
@@ -151,7 +200,8 @@ def updateViewScreensScreens(ViewScreensPadding, host, port):
                             x,
                             y,
                             size=sizes,
-                            thisPc=False
+                            thisPc=False, 
+                            pos=i
                         )
                     )
                     x = (x + (sizes[0] + ViewScreensPadding)) if i != 3 or i != 6 or i != 9 else ViewScreensPadding
@@ -174,7 +224,8 @@ OPEN = True
 
 def Main(addr):
     global TIMER, RUN, OPEN, Live, OnOFF, Sharing_Screen, screens
-    
+    global host, port
+
     host, port = addr
 
     WIN = pygame.display.set_mode(SIZE)
@@ -298,7 +349,7 @@ def Main(addr):
     Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,)).start()
 
     while RUN:
-        clock.tick(120)
+        clock.tick(60)
         pygame.display.set_caption("Screen Sharing")
 
         if pygame.time.get_ticks()-TIMER > 1000:

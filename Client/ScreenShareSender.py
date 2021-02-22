@@ -30,10 +30,15 @@ def send_img(img, sender):
     # compress the image after resizeing it
     # to an apropriet value 
     # compression level can be 0-9
+    imsize = (600, 600)
     image = Image.frombytes("RGB", img.size, img.bgra, "raw", "BGRX")
-    image.resize((600, 600))
+    image.resize(imsize)
     pixels = bytes(image.tobytes("raw", "RGB"), "utf-8")
     pixels = compress(pixels, 6)
+
+    # send the size of the image
+    sender.sendall(bytes(imsize[0]))
+    sender.sendall(bytes(imsize[1]))
 
     # send the size of pixels length
     size = len(pixels)
@@ -51,9 +56,15 @@ def screenshare_picture_taker(sender):
     import ScreenShareGUI as GUI
     with mss() as sct:
         while GUI.Sharing_Screen:
+            # send a continue signal
+            sender.sendall(bytes("True", "utf-8"))
+
             # capture the screen
             img = sct.grab(RECT)
             send_img(img, sender)
+        
+        # send a stop sharing signal
+        sender.sendall(bytes("False", "utf-8"))
 
            
 

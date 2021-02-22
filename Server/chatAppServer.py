@@ -84,11 +84,89 @@ def accept_incoming_connections():
 def handle_sending_screenshare(client):
     """Handling each sending ScreenShare account"""
     # client is a socket conection
+
+    def convertPixels(reciver, length):
+        "Retrives all pixels"
+
+        buf = b""
+        while len(buf) < length:
+            data = reciver.recv(length-len(buf))
+            if not data:
+                return data
+            buf += data
+        return buf
+
+    run = True
+    while run:
+        # running or not?
+        continueTF = True if client.recv(1024).decode("utf-8") == "True" else False
+        if continueTF == False:
+            run = False
+            break
+
+        # get the size of the image
+        imsize = (int.from_bytes(client.recv(1024)), int.from_bytes(client.recv(1024)))
+
+        # get data on the image
+        size_len = int.from_bytes(client.recv(1), byteorder="big")
+        size = int.from_bytes(client.recv(size_len), byteorder="big")
+        pixels = convertPixels(client, size)
+
+        #          Username of their already 
+        #              signed in account, pixels, size,  type
+        screenshares[clients[client]] = [pixels, imsize, "RGB"]
     
+    del screenshares[clients[client]]
+    del sending_screenshares[client]
+
 
 def handle_reciveing_screenshare(client):
+    """Handles all of the reciving conections"""
     # client is a socket conection
-    pass
+    msg = client.recv(1024)
+    allOrNone = True if msg.decode("utf-8") == "ALL" else int.from_bytes(msg)
+
+    run = True
+    while run:
+        # running or not?
+        continueTF = True if client.recv(1024).decode("utf-8") == "True" else False
+        if continueTF == False:
+            run = False
+            break
+        
+        if allOrNone == True:
+            for username in screenshares:
+                
+                # send the username
+                client.sendall(bytes(str(username), "utf-8"))
+
+                # send the pixels
+                client.sendall(screenshares[username][0])
+
+                # send the image size
+                client.sendall(bytes(str(screenshares[username][1][0]), "utf-8"))
+                client.sendall(bytes(str(screenshares[username][1][1]), "utf-8"))
+
+                # send the type of image
+                client.sendall(bytes(screenshares[username][2], "utf-8"))
+                
+        else:
+            # get the username
+            username = screenshares[allOrNone]
+
+            # send the username
+            client.sendall(bytes(str(username), "utf-8"))
+
+            # send the pixels
+            client.sendall(screenshares[username][0])
+
+            # send the image size
+            client.sendall(bytes(str(screenshares[username][1][0]), "utf-8"))
+            client.sendall(bytes(str(screenshares[username][1][1]), "utf-8"))
+
+            # send the type of image
+            client.sendall(bytes(screenshares[username][2], "utf-8"))
+
     
 
 def handle_client(client, username):  # Takes client socket as argument.
