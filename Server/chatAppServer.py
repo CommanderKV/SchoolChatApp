@@ -1,7 +1,6 @@
 """Server for multithreaded (asynchronous) chat application."""
 from socket import AF_INET, socket, SOCK_STREAM, gethostbyname, gethostname
 from threading import Thread
-import pygame
 
 
 clients = {}
@@ -149,7 +148,7 @@ def handle_reciveing_screenshare(client):
 
                 # send the type of image
                 client.sendall(bytes(screenshares[username][2], "utf-8"))
-                
+
         else:
             # get the username
             username = screenshares[allOrNone]
