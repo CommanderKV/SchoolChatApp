@@ -41,11 +41,13 @@ def on_closing(event=None):
 
     # when window is close send a quit message to the server as well
     my_msg.set("{quit}")
-    send()
-    print(2)
-    top.quit()
-    print(3)
-    quit()
+    try:
+        send()
+    finally:
+        print(2)
+        top.quit()
+        print(3)
+        quit()
 
 
 def reset(event=None):

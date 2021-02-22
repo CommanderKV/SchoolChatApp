@@ -190,7 +190,7 @@ def handle_client(client, username):  # Takes client socket as argument.
             except:
                 client.close()
                 del clients[client]
-                quit()
+                break
         
         # if the message is for the server to shutdown
         elif msg == bytes("{serverQuit}", "utf8"):
