@@ -150,6 +150,7 @@ class Screen(pygame.Surface):
         # add screen to win
         win.blit(self, (0, 0))
 
+
 def startScreenShare(addr):
     global Live, Sharing_Screen
 
