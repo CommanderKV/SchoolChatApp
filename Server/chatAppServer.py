@@ -87,9 +87,10 @@ def handle_sending_screenshare(client):
     def convertPixels(reciver, length):
         "Retrives all pixels"
 
+        print(length)
         buf = b""
         while len(buf) < length:
-            data = reciver.recv(length-len(buf))
+            data = reciver.recv(int(length-len(buf)))
             if not data:
                 return data
             buf += data
