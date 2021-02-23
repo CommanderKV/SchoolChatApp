@@ -84,7 +84,6 @@ def accept_incoming_connections():
 def convertPixels(reciver, length):
     """Retrives all pixels"""
 
-    print(length)
     buf = b""
     while len(buf) < length:
         data = reciver.recv(length-len(buf))
@@ -101,7 +100,9 @@ def handle_sending_screenshare(client):
     run = True
     while run:
         # running or not?
-        continueTF = True if client.recv(1024).decode("utf-8") == "True" else False
+        msg = client.recv(1024).decode("utf-8")
+        print(f"msg: {msg}")
+        continueTF = True if msg == "True" else False
         if continueTF == False:
             run = False
             break
@@ -111,11 +112,13 @@ def handle_sending_screenshare(client):
             int.from_bytes(client.recv(1024), byteorder="big"), 
             int.from_bytes(client.recv(1024), byteorder="big")
         )
-        print(imsize)
+        print(f"imsize: {imsize}")
 
         # get data on the image
         size_len = int.from_bytes(client.recv(1), byteorder="big")
+        print(f"size_len: {size_len}")
         size = int.from_bytes(client.recv(size_len), byteorder="big")
+        print(f"size: {size}")
         pixels = decompress(convertPixels(client, size))
 
         #          Username of their already 
