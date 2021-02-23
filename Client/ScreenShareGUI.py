@@ -259,6 +259,18 @@ def Main(addr):
     global threads, WIN, TIMER, RUN, OPEN, Live, OnOff, Sharing_Screen, screens, SIZE
     global host, port
 
+    SIZE = (600, 500)
+    WIN = None
+    screens = []
+    Sharing_Screen = False
+    OnOff = False
+    Live = False
+    TIMER = 0
+    RUN = True
+    OPEN = True
+    ThreadsOn = True
+    threads = []
+
     host, port = addr
 
     print("ScreenShare menu oppend", WIN)
