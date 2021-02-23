@@ -152,7 +152,7 @@ class Screen(pygame.Surface):
 
 
 def startScreenShare(addr):
-    global Live, Sharing_Screen
+    global Live, Sharing_Screen, threads
 
     # set live and sharing_screen to True
     host, port = addr
@@ -160,7 +160,9 @@ def startScreenShare(addr):
     Sharing_Screen = True
 
     # start a thread with the sending program on it
-    Thread(target=sender.main, args=(host, port,)).start()
+    t = Thread(target=sender.main, args=(host, port,))
+    threads.append(t)
+    t.start()
 
 def stopScreenSharing():
     global Live, Sharing_Screen
@@ -189,11 +191,11 @@ def winUpdate(win, screens):
 
 def updateViewScreensScreens(ViewScreensPadding, host, port):
     import time
-    global screens, OPEN
+    global screens, OPEN, ThreadsOn
 
     start = time.time()
 
-    while OPEN:
+    while OPEN and ThreadsOn:
         sharedVars.acquire()
 
         if screens[1].active == True:
@@ -242,6 +244,7 @@ def updateViewScreensScreens(ViewScreensPadding, host, port):
 sharedVars = Condition()
 pygame.font.init()
 SIZE = (600, 500)
+WIN = None
 screens = []
 Sharing_Screen = False
 OnOff = False
@@ -249,15 +252,20 @@ Live = False
 TIMER = 0
 RUN = True
 OPEN = True
+ThreadsOn = True
+threads = []
 
 def Main(addr):
-    global TIMER, RUN, OPEN, Live, OnOff, Sharing_Screen, screens
+    global threads, WIN, TIMER, RUN, OPEN, Live, OnOff, Sharing_Screen, screens, SIZE
     global host, port
 
     host, port = addr
 
+    print("ScreenShare menu oppend", WIN)
+    pygame.init()
     WIN = pygame.display.set_mode(SIZE)
     clock = pygame.time.Clock()
+    print("ScreenShare menu oppend", WIN)
 
     MainMenuButtons = [
         Button(
@@ -377,7 +385,9 @@ def Main(addr):
     screens.append(ScreenShareControlScreen)
     ScreenShareControlScreen.active = False
 
-    Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,)).start()
+    t = Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,))
+    threads.append(t)
+    t.start()
 
     while RUN:
         clock.tick(60)
@@ -415,3 +425,4 @@ def Main(addr):
         winUpdate(WIN, screens)
     
     OPEN = False
+    ThreadsOn = False

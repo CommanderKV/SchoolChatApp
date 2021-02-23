@@ -60,7 +60,7 @@ def send_img(img, sender):
 def screenshare_picture_taker(sender):
     import ScreenShareGUI as GUI
     with mss() as sct:
-        while GUI.Sharing_Screen:
+        while GUI.Sharing_Screen and GUI.ThreadsOn:
             # send a continue signal
             sender.sendall(bytes("True", "utf-8"))
 
