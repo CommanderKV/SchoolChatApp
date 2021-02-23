@@ -4,6 +4,7 @@ import requests
 from threading import Thread
 import ScreenShareGUI as SShareGUI
 import tkinter
+import time
 
 
 def receive():
@@ -38,6 +39,7 @@ def send(event=None):  # event is passed by binders.
 
 def on_closing(event=None):
     """This function is to be called when the window is closed."""
+    global top
 
     # when window is close send a quit message to the server as well
     my_msg.set("{quit}")
@@ -46,8 +48,8 @@ def on_closing(event=None):
     finally:
         print(2)
         top.quit()
-        print(3)
         quit()
+        print("Nooooooooo")
 
 
 def reset(event=None):

@@ -1,6 +1,7 @@
 """Server for multithreaded (asynchronous) chat application."""
 from socket import AF_INET, socket, SOCK_STREAM, gethostbyname, gethostname
 from threading import Thread
+from zlib import decompress
 
 
 clients = {}
@@ -80,21 +81,22 @@ def accept_incoming_connections():
             client.sendall(amount)
 
 
+def convertPixels(reciver, length):
+    """Retrives all pixels"""
+
+    print(length)
+    buf = b""
+    while len(buf) < length:
+        data = reciver.recv(length-len(buf))
+        if not data:
+            return data
+        buf += data
+    return buf
+
+
 def handle_sending_screenshare(client):
     """Handling each sending ScreenShare account"""
     # client is a socket conection
-
-    def convertPixels(reciver, length):
-        "Retrives all pixels"
-
-        print(length)
-        buf = b""
-        while len(buf) < length:
-            data = reciver.recv(int(length-len(buf)))
-            if not data:
-                return data
-            buf += data
-        return buf
 
     run = True
     while run:
@@ -109,11 +111,12 @@ def handle_sending_screenshare(client):
             int.from_bytes(client.recv(1024), byteorder="big"), 
             int.from_bytes(client.recv(1024), byteorder="big")
         )
+        print(imsize)
 
         # get data on the image
         size_len = int.from_bytes(client.recv(1), byteorder="big")
         size = int.from_bytes(client.recv(size_len), byteorder="big")
-        pixels = convertPixels(client, size)
+        pixels = decompress(convertPixels(client, size))
 
         #          Username of their already 
         #              signed in account, pixels, size,  type

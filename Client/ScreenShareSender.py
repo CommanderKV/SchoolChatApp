@@ -33,17 +33,21 @@ def send_img(img, sender):
     imsize = (600, 600)
     image = Image.frombytes("RGB", img.size, img.bgra, "raw", "BGRX")
     image.resize(imsize)
-    pixels = image.tobytes("raw", "RGB")
+    pixels = image.tobytes("raw", "RGB") # b'...'
+    print(len(pixels)) # 5700000
     pixels = compress(pixels, 6)
+    print(len(pixels)) # 252259
 
     # send the size of the image
     sender.sendall(bytes(imsize[0]))
     sender.sendall(bytes(imsize[1]))
 
     # send the size of pixels length
-    size = len(pixels)
-    size_len = (size.bit_length() + 7) // 8
+    size = len(pixels) # 418912, 252259
+    print(size)
+    size_len = (size.bit_length() + 7) // 8 # 3
     print(size_len)
+
     sender.send(bytes([size_len]))
 
     # send the pixels length

@@ -399,6 +399,8 @@ def Main(addr):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 RUN = False
+                Live = False
+                Sharing_Screen = False
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for screen in screens:
