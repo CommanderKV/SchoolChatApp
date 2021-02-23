@@ -191,55 +191,79 @@ def winUpdate(win, screens):
 
 def updateViewScreensScreens(ViewScreensPadding, host, port):
     import time
-    global screens, OPEN, ThreadsOn
+    global screens, OPEN, ThreadsOn, RUN
 
     start = time.time()
 
     while OPEN and ThreadsOn:
         sharedVars.acquire()
 
-        if screens[1].active == True:
-            if time.time() - start >= 10.0:
-                start = time.time()
+        if len(screens) > 0:
+            if screens[1].active == True:
+                if time.time() - start >= 10.0:
+                    start = time.time()
 
-                updatedScreens = []
-                x = ViewScreensPadding
-                y = int(ViewScreensPadding*2)+30
-                
-                # make a socket and connect to the server
-                guiSocket = socket()
-                guiSocket.connect((host, port))
-                guiSocket.recv(1024)
+                    updatedScreens = []
+                    x = ViewScreensPadding
+                    y = int(ViewScreensPadding*2)+30
+                    
+                    # make a socket and connect to the server
+                    guiSocket = socket()
+                    guiSocket.connect((host, port))
+                    guiSocket.recv(1024)
 
-                ip = gethostbyname(gethostname())
+                    ip = gethostbyname(gethostname())
 
-                # ask for the Amount of screens that are being shared
-                guiSocket.sendall(bytes(f"[SCREENSHARE_{ip}_A]", "utf-8"))
+                    # ask for the Amount of screens that are being shared
+                    guiSocket.sendall(bytes(f"[SCREENSHARE_{ip}_A]", "utf-8"))
 
-                # get the amount of screens
-                Amount = int(guiSocket.recv(1024).decode("utf-8"))
+                    # get the amount of screens
+                    Amount = int(guiSocket.recv(1024).decode("utf-8"))
 
-                sizes = (
-                    int(SIZE[0]/3), 
-                    int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)/3)
-                )
-
-                for i in range(Amount):
-                    updatedScreens.append(
-                        screenshare(
-                            x,
-                            y,
-                            size=sizes,
-                            thisPc=False, 
-                            pos=i
-                        )
+                    sizes = (
+                        int(SIZE[0]/3), 
+                        int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)/3)
                     )
-                    x = (x + (sizes[0] + ViewScreensPadding)) if i != 3 or i != 6 or i != 9 else ViewScreensPadding
-                    y += (sizes[1]+ViewScreensPadding) if i == 3 or i == 6 or i == 9 else 0
 
-                screens[1].screenshares = updatedScreens
+                    for i in range(Amount):
+                        updatedScreens.append(
+                            screenshare(
+                                x,
+                                y,
+                                size=sizes,
+                                thisPc=False, 
+                                pos=i
+                            )
+                        )
+                        x = (x + (sizes[0] + ViewScreensPadding)) if i != 3 or i != 6 or i != 9 else ViewScreensPadding
+                        y += (sizes[1]+ViewScreensPadding) if i == 3 or i == 6 or i == 9 else 0
+
+                    screens[1].screenshares = updatedScreens
+
+        else:
+            sharedVars.release()
+            break
 
         sharedVars.release()
+
+def exitProgram():
+    global SIZE, screens, OnOff
+    global Live, TIMER, RUN, OPEN
+    global ThreadsOn, threads
+    global WIN, Sharing_Screen
+    
+    SIZE = (600, 500)
+    WIN = None
+    screens = []
+    Sharing_Screen = False
+    OnOff = False
+    Live = False
+    TIMER = 0
+    RUN = False
+    OPEN = True
+    ThreadsOn = True
+    threads = []
+
 
 sharedVars = Condition()
 pygame.font.init()
@@ -259,18 +283,6 @@ def Main(addr):
     global threads, WIN, TIMER, RUN, OPEN, Live, OnOff, Sharing_Screen, screens, SIZE
     global host, port
 
-    SIZE = (600, 500)
-    WIN = None
-    screens = []
-    Sharing_Screen = False
-    OnOff = False
-    Live = False
-    TIMER = 0
-    RUN = True
-    OPEN = True
-    ThreadsOn = True
-    threads = []
-
     host, port = addr
 
     print("ScreenShare menu oppend", WIN)
@@ -279,129 +291,134 @@ def Main(addr):
     clock = pygame.time.Clock()
     print("ScreenShare menu oppend", WIN)
 
-    MainMenuButtons = [
-        Button(
-            (255, 0, 0), # color
-            50, # x
-            int(WIN.get_height()/2), # y
-            150, # width
-            30, # height
-            "View Screens", # text
-            function=switchScreenTo, # function
-            args="view screen shares" # args
-        ),
+    if True:
+        MainMenuButtons = [
+            Button(
+                (255, 0, 0), # color
+                50, # x
+                int(WIN.get_height()/2), # y
+                150, # width
+                30, # height
+                "View Screens", # text
+                function=switchScreenTo, # function
+                args="view screen shares" # args
+            ),
 
-        Button(
-            (255, 0, 0), # color
-            int(WIN.get_width()-(50 + 180)), # x
-            int(WIN.get_height()/2), # y
-            180, # width
-            30, # height
-            "Sharing controls", # text
-            function=switchScreenTo, # function
-            args="screen share options" # args
-        ),
+            Button(
+                (255, 0, 0), # color
+                int(WIN.get_width()-(50 + 180)), # x
+                int(WIN.get_height()/2), # y
+                180, # width
+                30, # height
+                "Sharing controls", # text
+                function=switchScreenTo, # function
+                args="screen share options" # args
+            ),
 
-        Button(
-            (255, 0, 0), # color 
-            int(WIN.get_width()/2)-int((80/2)+15), # x
-            int(WIN.get_height()/2)+int(30*5), # y
-            80, # width
-            30, # height
-            "Quit", # text
-            function=quit # function
+            Button(
+                (255, 0, 0), # color 
+                int(WIN.get_width()/2)-int((80/2)+15), # x
+                int(WIN.get_height()/2)+int(30*5), # y
+                80, # width
+                30, # height
+                "Quit", # text
+                function=exitProgram # function
+            )
+        ]
+
+        MainMenuScreen = Screen((69, 189, 60), "MAIN MENU", buttons=MainMenuButtons, size=SIZE)
+        screens.append(MainMenuScreen)
+
+        ViewScreensPadding = 20
+        ViewScreensButtons = [
+            Button(
+                (255, 0, 0), # color
+                ViewScreensPadding, # x
+                ViewScreensPadding, # y
+                100, # width
+                30, # height
+                "Back", # text
+                function=switchScreenTo, # function
+                args="main menu" # args
+            )
+        ]
+
+        ViewScreensScreens = []
+
+        ViewScreensScreen = Screen(
+            (69, 189, 60), 
+            "VIEW SCREEN SHARES", 
+            buttons=ViewScreensButtons, 
+            screenshares=ViewScreensScreens, 
+            size=SIZE
         )
-    ]
 
-    MainMenuScreen = Screen((69, 189, 60), "MAIN MENU", buttons=MainMenuButtons, size=SIZE)
-    screens.append(MainMenuScreen)
+        screens.append(ViewScreensScreen)
+        ViewScreensScreen.active = False
 
-    ViewScreensPadding = 20
-    ViewScreensButtons = [
-        Button(
-            (255, 0, 0), # color
-            ViewScreensPadding, # x
-            ViewScreensPadding, # y
-            100, # width
-            30, # height
-            "Back", # text
-            function=switchScreenTo, # function
-            args="main menu" # args
+        ScreenShareControlScreenSpacing = 20
+        ScreenShareButtons = [
+            Button(
+                (255, 0, 0), # color
+                int(WIN.get_width()-(150+ScreenShareControlScreenSpacing)), # x
+                int(WIN.get_height()-((30+ScreenShareControlScreenSpacing)+(30+ScreenShareControlScreenSpacing))), # y
+                150, # width
+                30, # height
+                "Start sharing", # text
+                function=startScreenShare, # function
+                args=(host, port) # args
+            ),
+
+            Button(
+                (255, 0, 0), # color
+                int(WIN.get_width()-(150+ScreenShareControlScreenSpacing)), # x
+                int(WIN.get_height()-(30+ScreenShareControlScreenSpacing)), # y
+                150, # width
+                30, # height
+                "Stop sharing", # text
+                function=stopScreenSharing # function
+            ), 
+
+            Button(
+                (255, 0, 0), # color
+                ScreenShareControlScreenSpacing, # x
+                int(WIN.get_height()-(30+ScreenShareControlScreenSpacing)), # y
+                100, # width
+                30, # height
+                "Back", # text
+                function=switchScreenTo, # function
+                args="main menu" # args
+            )
+        ]
+
+        ScreenShareScreens = [
+            screenshare(
+                ScreenShareControlScreenSpacing, # x
+                ScreenShareControlScreenSpacing, # y
+                size=(WIN.get_width()-(ScreenShareControlScreenSpacing*2), 370)
+            )
+        ]
+
+        ScreenShareControlScreen = Screen(
+            (69, 189, 60), # color
+            "SCREEN SHARE OPTIONS", # mode
+            buttons=ScreenShareButtons, # buttons
+            screenshares=ScreenShareScreens, # screens
+            size=SIZE # size
         )
-    ]
 
-    ViewScreensScreens = []
+        screens.append(ScreenShareControlScreen)
+        ScreenShareControlScreen.active = False
 
-    ViewScreensScreen = Screen(
-        (69, 189, 60), 
-        "VIEW SCREEN SHARES", 
-        buttons=ViewScreensButtons, 
-        screenshares=ViewScreensScreens, 
-        size=SIZE
-    )
-
-    screens.append(ViewScreensScreen)
-    ViewScreensScreen.active = False
-
-    ScreenShareControlScreenSpacing = 20
-    ScreenShareButtons = [
-        Button(
-            (255, 0, 0), # color
-            int(WIN.get_width()-(150+ScreenShareControlScreenSpacing)), # x
-            int(WIN.get_height()-((30+ScreenShareControlScreenSpacing)+(30+ScreenShareControlScreenSpacing))), # y
-            150, # width
-            30, # height
-            "Start sharing", # text
-            function=startScreenShare, # function
-            args=(host, port) # args
-        ),
-
-        Button(
-            (255, 0, 0), # color
-            int(WIN.get_width()-(150+ScreenShareControlScreenSpacing)), # x
-            int(WIN.get_height()-(30+ScreenShareControlScreenSpacing)), # y
-            150, # width
-            30, # height
-            "Stop sharing", # text
-            function=stopScreenSharing # function
-        ), 
-
-        Button(
-            (255, 0, 0), # color
-            ScreenShareControlScreenSpacing, # x
-            int(WIN.get_height()-(30+ScreenShareControlScreenSpacing)), # y
-            100, # width
-            30, # height
-            "Back", # text
-            function=switchScreenTo, # function
-            args="main menu" # args
-        )
-    ]
-
-    ScreenShareScreens = [
-        screenshare(
-            ScreenShareControlScreenSpacing, # x
-            ScreenShareControlScreenSpacing, # y
-            size=(WIN.get_width()-(ScreenShareControlScreenSpacing*2), 370)
-        )
-    ]
-
-    ScreenShareControlScreen = Screen(
-        (69, 189, 60), # color
-        "SCREEN SHARE OPTIONS", # mode
-        buttons=ScreenShareButtons, # buttons
-        screenshares=ScreenShareScreens, # screens
-        size=SIZE # size
-    )
-
-    screens.append(ScreenShareControlScreen)
-    ScreenShareControlScreen.active = False
-
-    t = Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,))
-    threads.append(t)
-    t.start()
+        t = Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,))
+        threads.append(t)
+        t.start()
+        t = 0
 
     while RUN:
+        if t == 0:
+            print("In while loop")
+            t += 1
         clock.tick(60)
         pygame.display.set_caption("Screen Sharing")
 
@@ -434,7 +451,14 @@ def Main(addr):
 
         
         # update the window
-        winUpdate(WIN, screens)
+        if RUN == True:
+            winUpdate(WIN, screens) 
+        else:
+            break
     
+    print("Out of loop")
+
+    RUN = True    
     OPEN = False
     ThreadsOn = False
+    pygame.quit()
