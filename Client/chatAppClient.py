@@ -5,6 +5,7 @@ from threading import Thread
 import ScreenShareGUI as SShareGUI
 import tkinter
 import time
+import sys
 
 
 def receive():
@@ -48,8 +49,8 @@ def on_closing(event=None):
     finally:
         print(2)
         top.quit()
-        quit()
-        print("Nooooooooo")
+        print("top.quit() passed")
+        raise KeyboardInterrupt
 
 
 def reset(event=None):
@@ -59,11 +60,14 @@ def reset(event=None):
         my_msg.set("") # clear the entry_field
 
 
-def startScreenShareMenu():
+def openMenu():
+    global ADDR
+    print("attempting to open a screenshare menu")
     SShareGUI.Main(ADDR)
 
+
 def openScreenShareMenu(event=None):
-    Thread(target=startScreenShareMenu).start()
+    Thread(target=openMenu).start()
 
 top = tkinter.Tk()
 top.title("School Chat")
