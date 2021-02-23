@@ -40,8 +40,18 @@ def send_img(img, sender):
     #print(len(pixels)) # 252259
 
     # send the size of the image
+    size1 = len(str(imsize[0]))
+    size1 = ((size1.bit_length() + 7)//8)
+    sender.sendall(bytes([size1]))
+    print(f"sending: '{size1}'")
+    
     sender.sendall(bytes(str(imsize[0]), "utf-8"))
     print(f"Sending: '{imsize[0]}'")
+
+    size1 = len(str(imsize[1]))
+    size1 = ((size1.bit_length() + 7)//8)
+    sender.sendall(bytes([size1]))
+    print(f"sending: '{size1}'")
 
     sender.sendall(bytes(str(imsize[1]), "utf-8"))
     print(f"Sending: '{imsize[1]}'")
@@ -53,7 +63,7 @@ def send_img(img, sender):
     #print(size_len)
 
     sender.send(bytes([size_len]))
-    print(f"Sending: '{[size_len]}'")
+    print(f"Sending: '{size_len}'")
 
     # send the pixels length
     size_bytes = size.to_bytes(size_len, "big")
@@ -69,6 +79,7 @@ def screenshare_picture_taker(sender):
     with mss() as sct:
         while GUI.Sharing_Screen and GUI.ThreadsOn:
             # send a continue signal
+            sender.sendall(bytes(len("True")))
             sender.sendall(bytes("True", "utf-8"))
             print("Sending: 'True'")
 
@@ -77,8 +88,9 @@ def screenshare_picture_taker(sender):
             send_img(img, sender)
         
         # send a stop sharing signal
+        sender.sendall(bytes(len("False")))
         sender.sendall(bytes("False", "utf-8"))
-        print("Sending: 'Fasle'")
+        print("Sending: 'False'")
 
            
 

@@ -100,8 +100,9 @@ def handle_sending_screenshare(client):
     run = True
     while run:
         # running or not?
-        msg = client.recv(1024).decode("utf-8")
-        print(f"msg: {msg}")
+        msgSize = int.from_bytes(client.recv(1), byteorder="big")
+        msg = client.recv(msgSize).decode("utf-8")
+        print(f"msg: '{msg}'")
 
         continueTF = True if msg == "True" else False
         if continueTF == False:
@@ -109,18 +110,23 @@ def handle_sending_screenshare(client):
             break
 
         # get the size of the image
+        imsize1Len = int.from_bytes(client.recv(1), byteorder="big")
+        imsize1 = int(client.recv(imsize1Len).decode())
+
+        imsize2Len = int.from_bytes(client.recv(1), byteorder="big")
+        imsize2 = int(client.recv(imsize2Len).decode())
         imsize = (
-            int(client.recv(1024).decode("utf-8")), 
-            int(client.recv(1024).decode("utf-8"))
+            imsize1, 
+            imsize2
         )
-        print(f"imsize: {imsize}")
+        print(f"imsize: '{imsize}'")
 
         # get data on the image
         size_len = int.from_bytes(client.recv(1), byteorder="big")
-        print(f"size_len: {size_len}")
+        print(f"size_len: '{size_len}'")
 
         size = int.from_bytes(client.recv(size_len), byteorder="big")
-        print(f"size: {size}")
+        print(f"size: '{size}'")
 
         pixels = decompress(convertPixels(client, size))
 
