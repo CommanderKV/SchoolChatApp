@@ -18,6 +18,9 @@ print(f"Connect to IP: {gethostbyname(gethostname())}, PORT: {PORT}")
 
 def accept_incoming_connections():
     """Sets up handling for incoming clients."""
+    global reciveing_screenshares, sending_screenshares, screenshares
+    global clients, addresses
+
     while True:
         client, client_address = SERVER.accept()
 
@@ -96,11 +99,15 @@ def convertPixels(reciver, length):
 def handle_sending_screenshare(client):
     """Handling each sending ScreenShare account"""
     # client is a socket conection
+    global screenshares
+    global clients
+    global sending_screenshares
 
     run = True
     while run:
         # running or not?
         msgSize = int.from_bytes(client.recv(1), byteorder="big")
+        print(f"msgSize: '{msgSize}'")
         msg = client.recv(msgSize).decode("utf-8")
         print(f"msg: '{msg}'")
 
@@ -108,13 +115,14 @@ def handle_sending_screenshare(client):
         if continueTF == False:
             run = False
             break
+            
 
         # get the size of the image
         imsize1Len = int.from_bytes(client.recv(1), byteorder="big")
         imsize1 = int(client.recv(imsize1Len).decode())
 
         imsize2Len = int.from_bytes(client.recv(1), byteorder="big")
-        imsize2 = int(client.recv(imsize2Len).decode())
+        imsize2 = int.from_bytes(client.recv(imsize2Len), byteorder="big")
         imsize = (
             imsize1, 
             imsize2
@@ -134,6 +142,12 @@ def handle_sending_screenshare(client):
         #              signed in account, pixels, size,  type
         screenshares[clients[client]] = [pixels, imsize, "RGB"]
     
+    print(screenshares.keys())
+    for name in screenshares:
+        if name == clients[client]:
+            print(f"Selecting this to delete: '{name}'")
+        else:
+            print(name)
     del screenshares[clients[client]]
     del sending_screenshares[client]
 
