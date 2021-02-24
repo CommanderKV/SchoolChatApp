@@ -109,10 +109,10 @@ def handle_sending_screenshare(client, hostname):
         while run:
             # running or not?
             msgSize = int.from_bytes(client.recv(1), byteorder="big")
-            print(f"msgSize: '{msgSize}'")
+            #print(f"msgSize: '{msgSize}'")
 
             msg = client.recv(msgSize).decode("utf-8")
-            print(f"msg: '{msg}'")
+            #print(f"msg: '{msg}'")
 
             continueTF = True if msg == "True" else False
             if continueTF == False:
@@ -133,20 +133,20 @@ def handle_sending_screenshare(client, hostname):
                 imsize1, 
                 imsize2
             )
-            print(f"imsize: '{imsize}'")
+            #print(f"imsize: '{imsize}'")
 
             # get data on the image
             size_len = int.from_bytes(client.recv(1), byteorder="big")
-            print(f"size_len: '{size_len}'")
+            #print(f"size_len: '{size_len}'")
 
             size = int.from_bytes(client.recv(size_len), byteorder="big")
-            print(f"size: '{size}'")
+            #print(f"size: '{size}'")
 
             pixels = decompress(convertPixels(client, size))
-            print(f"pixels len: '{len(pixels)}'")
+            #print(f"pixels len: '{len(pixels)}'")
 
             #          Username of their already 
-            #              signed in account, pixels, size,  type
+            #              signed in account,    pixels, size,  type
             screenshares[usernames[hostname]] = [pixels, imsize, "RGB"]
     
     except:
@@ -165,6 +165,9 @@ def handle_sending_screenshare(client, hostname):
 
 def handle_reciveing_screenshare(client):
     """Handles all of the reciving conections"""
+    #    dict\/      str\/    str?\/ tupple\/  str\/
+    # screenshares[username] = [pixels, imsize, "RGB"]
+    
     # client is a socket conection
     msg = client.recv(1024)
     allOrNone = True if msg.decode("utf-8") == "ALL" else int.from_bytes(msg)

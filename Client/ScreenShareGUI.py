@@ -458,8 +458,9 @@ def Main(addr):
             break
     
     print("Out of loop")
+    exitProgram()
 
-    RUN = True    
+    # set vairables that other threads are cheking for
     OPEN = False
     ThreadsOn = False
     pygame.quit()
