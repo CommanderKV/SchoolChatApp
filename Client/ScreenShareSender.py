@@ -40,19 +40,21 @@ def send_img(img, sender):
     #print(len(pixels)) # 252259
 
     # send the size of the image
-    size1 = (imsize[0].bit_length() + 7) // 8
+    imsize1 = int(imsize[0]/100)
+    size1 = (imsize1.bit_length() + 7) // 8
     sender.sendall(bytes([size1]))
     print(f"sending: '{size1}'")
 
-    sender.sendall(bytes([imsize[0]]))
-    print(f"Sending: '{imsize[0]}'")
+    sender.sendall(bytes([imsize1]))
+    print(f"Sending: '{imsize1}'")
 
-    size1 = (imsize[1].bit_length() + 7) // 8
+    imsize1 = int(imsize[1]/100)
+    size1 = (imsize1.bit_length() + 7) // 8
     sender.sendall(bytes([size1]))
     print(f"sending: '{size1}'")
 
-    sender.sendall(bytes(imsize[1]))
-    print(f"Sending: '{imsize[0]}'")
+    sender.sendall(bytes(imsize1))
+    print(f"Sending: '{imsize1}'")
 
     # send the size of pixels length
     size = len(pixels) # 418912, 252259

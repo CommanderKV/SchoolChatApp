@@ -120,9 +120,12 @@ def handle_sending_screenshare(client):
         # get the size of the image
         imsize1Len = int.from_bytes(client.recv(1), byteorder="big")
         imsize1 = int.from_bytes(client.recv(imsize1Len), byteorder="big")
+        imsize1 *= 100
 
         imsize2Len = int.from_bytes(client.recv(1), byteorder="big")
         imsize2 = int.from_bytes(client.recv(imsize2Len), byteorder="big")
+        imsize2 *= 100
+        
         imsize = (
             imsize1, 
             imsize2
