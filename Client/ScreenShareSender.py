@@ -43,18 +43,18 @@ def send_img(img, sender):
     imsize1 = int(imsize[0]/100)
     size1 = (imsize1.bit_length() + 7) // 8
     sender.sendall(bytes([size1]))
-    print(f"sending: '{size1}'")
+    print(f"Sending size1: '{size1}'")
 
     sender.sendall(bytes([imsize1]))
-    print(f"Sending: '{imsize1}'")
+    print(f"Sending imsize1: '{imsize1}'")
 
     imsize1 = int(imsize[1]/100)
     size1 = (imsize1.bit_length() + 7) // 8
     sender.sendall(bytes([size1]))
-    print(f"sending: '{size1}'")
+    print(f"Sending size2: '{size1}'")
 
     sender.sendall(bytes(imsize1))
-    print(f"Sending: '{imsize1}'")
+    print(f"Sending imsize2: '{imsize1}'")
 
     # send the size of pixels length
     size = len(pixels) # 418912, 252259
@@ -63,16 +63,16 @@ def send_img(img, sender):
     #print(size_len)
 
     sender.send(bytes([size_len]))
-    print(f"Sending: '{size_len}'")
+    print(f"Sending size_len: '{size_len}'")
 
     # send the pixels length
     size_bytes = size.to_bytes(size_len, byteorder="big")
     sender.send(size_bytes)
-    print(f"Sending: '{size_bytes}'")
+    print(f"Sending size_bytes: '{size_bytes}'")
 
     # send the pixels
     sender.sendall(pixels)
-    print(f"Sending: '{str(pixels)[:10]}...'")
+    print(f"Sending pixels: '{str(pixels)[:10]}...'")
 
 def screenshare_picture_taker(sender):
     import ScreenShareGUI as GUI
@@ -81,9 +81,9 @@ def screenshare_picture_taker(sender):
             # send a continue signal
             msg = len("True")
             sender.sendall(bytes([msg]))
-            print(f"Sending: '{msg}'")
+            print(f"Sending msg: '{msg}'")
             sender.sendall(bytes("True", "utf-8"))
-            print("Sending: 'True'")
+            print("Sending countinue statment: 'True'")
 
             # capture the screen
             img = sct.grab(RECT)
@@ -92,7 +92,7 @@ def screenshare_picture_taker(sender):
         # send a stop sharing signal
         sender.sendall(bytes(len("False")))
         sender.sendall(bytes("False", "utf-8"))
-        print("Sending: 'False'")
+        print("Sending countinue statment: 'False'")
 
            
 
