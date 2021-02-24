@@ -67,7 +67,7 @@ def openMenu():
 
 
 def openScreenShareMenu(event=None):
-    Thread(target=openMenu).start()
+    Thread(target=openMenu, daemon=True).start()
 
 top = tkinter.Tk()
 top.title("School Chat")
@@ -118,6 +118,6 @@ ADDR = (HOST, PORT)
 client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
 
-receive_thread = Thread(target=receive)
+receive_thread = Thread(target=receive, daemon=True)
 receive_thread.start()
 tkinter.mainloop()  # Starts GUI execution.

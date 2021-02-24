@@ -77,25 +77,28 @@ def send_img(img, sender):
 def screenshare_picture_taker(sender):
     import ScreenShareGUI as GUI
     with mss() as sct:
-        while GUI.Sharing_Screen and GUI.ThreadsOn:
-            # send a continue signal
-            msg = len("True")
-            sender.sendall(bytes([msg]))
-            print(f"Sending msg: '{msg}'")
+        try:
+            while GUI.Sharing_Screen:
+                # send a continue signal
+                msg = len("True")
+                sender.sendall(bytes([msg]))
+                print(f"Sending msg: '{msg}'")
 
-            sender.sendall(bytes("True", "utf-8"))
-            print("Sending countinue statment: 'True'")
+                sender.sendall(bytes("True", "utf-8"))
+                print("Sending countinue statment: 'True'")
 
-            # capture the screen
-            img = sct.grab(RECT)
-            send_img(img, sender)
+                # capture the screen
+                img = sct.grab(RECT)
+                send_img(img, sender)
+            
+            # send a stop sharing signal
+            sender.sendall(bytes([len("False")]))
+            sender.sendall(bytes("False", "utf-8"))
+            print("Sending countinue statment: 'False'")
         
-        # send a stop sharing signal
-        sender.sendall(bytes([len("False")]))
-        sender.sendall(bytes("False", "utf-8"))
-        print("Sending countinue statment: 'False'")
-
-           
+        finally:
+            sender.close()
+            GUI.Sharing_Screen = False          
 
 
 

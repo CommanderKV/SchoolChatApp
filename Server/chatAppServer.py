@@ -55,7 +55,7 @@ def accept_incoming_connections():
             addresses[client] = client_address
 
             # start a individual thread for this client
-            Thread(target=handle_client, args=(client, username, client_address[0],)).start()
+            Thread(target=handle_client, args=(client, username, client_address[0],), daemon=True).start()
         
         # if the account is a screenshare account
         elif username == reciveing_screenshare:
@@ -64,7 +64,7 @@ def accept_incoming_connections():
             reciveing_screenshare[client] = client_address
 
             # start a thread to handle reciving screenshare accounts
-            Thread(target=handle_reciveing_screenshare, args=(client,)).start()
+            Thread(target=handle_reciveing_screenshare, args=(client,), daemon=True).start()
 
         # if the account is a sending screenshare account
         elif username == sending_screenshare:
@@ -73,7 +73,7 @@ def accept_incoming_connections():
             sending_screenshares[client] = client_address
 
             # start a thread to handle sending screenshare accounts
-            Thread(target=handle_sending_screenshare, args=(client, client_address[0],)).start()
+            Thread(target=handle_sending_screenshare, args=(client, client_address[0],), daemon=True).start()
         
         # if the account is requesting the amount of screens give it to them
         elif username == amount_screenshare:
@@ -161,7 +161,7 @@ def handle_sending_screenshare(client, hostname):
 
         del screenshares[usernames[hostname]]
         del sending_screenshares[client]
-        
+
 
 def handle_reciveing_screenshare(client):
     """Handles all of the reciving conections"""
@@ -279,7 +279,7 @@ SERVER.bind(ADDR)
 if __name__ == "__main__":
     SERVER.listen(5)
     print("Waiting for connection...")
-    ACCEPT_THREAD = Thread(target=accept_incoming_connections)
+    ACCEPT_THREAD = Thread(target=accept_incoming_connections, daemon=True)
     ACCEPT_THREAD.start()
     ACCEPT_THREAD.join()
     SERVER.close()

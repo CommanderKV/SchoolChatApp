@@ -160,8 +160,8 @@ def startScreenShare(addr):
     Sharing_Screen = True
 
     # start a thread with the sending program on it
-    t = Thread(target=sender.main, args=(host, port,))
-    threads.append(t)
+    t = Thread(target=sender.main, args=(host, port,), daemon=True)
+    threads["sender.main"] = t
     t.start()
 
 def stopScreenSharing():
@@ -170,6 +170,7 @@ def stopScreenSharing():
     # set live and sharing_screen to False
     Live = False
     Sharing_Screen = False
+    threads["sender.main"]._stop()
 
 def switchScreenTo(screentopic):
     for screen in screens:
@@ -262,7 +263,7 @@ def exitProgram():
     RUN = False
     OPEN = True
     ThreadsOn = True
-    threads = []
+    threads = {}
 
 
 sharedVars = Condition()
@@ -277,7 +278,7 @@ TIMER = 0
 RUN = True
 OPEN = True
 ThreadsOn = True
-threads = []
+threads = {}
 
 def Main(addr):
     global threads, WIN, TIMER, RUN, OPEN, Live, OnOff, Sharing_Screen, screens, SIZE
@@ -410,8 +411,8 @@ def Main(addr):
         screens.append(ScreenShareControlScreen)
         ScreenShareControlScreen.active = False
 
-        t = Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,))
-        threads.append(t)
+        t = Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,), daemon=True)
+        threads["updateViewScreensScreens"] = t
         t.start()
         t = 0
 
