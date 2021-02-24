@@ -218,7 +218,7 @@ def updateViewScreensScreens(ViewScreensPadding, host, port):
                     guiSocket.sendall(bytes(f"[SCREENSHARE_{ip}_A]", "utf-8"))
 
                     # get the amount of screens
-                    Amount = int(guiSocket.recv(1024).decode("utf-8"))
+                    Amount = int.from_bytes(guiSocket.recv(1024), byteorder="big")
 
                     sizes = (
                         int(SIZE[0]/3), 

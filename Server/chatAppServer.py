@@ -79,7 +79,8 @@ def accept_incoming_connections():
         elif username == amount_screenshare:
 
             # get the amount of current screenshares
-            amount = bytes(str(len(screenshares)), "utf-8")
+            length_screenshares = len(screenshares)
+            amount = int.to_bytes(((length_screenshares.bit_length()+7)//8), byteorder="big")
 
             # send back the requested data
             client.sendall(amount)
@@ -167,7 +168,7 @@ def handle_reciveing_screenshare(client):
     """Handles all of the reciving conections"""
     #    dict\/      str\/    str?\/ tupple\/  str\/
     # screenshares[username] = [pixels, imsize, "RGB"]
-    
+
     # client is a socket conection
     msg = client.recv(1024)
     allOrNone = True if msg.decode("utf-8") == "ALL" else int.from_bytes(msg)
@@ -220,7 +221,7 @@ def handle_client(client, username, hostname):  # Takes client socket as argumen
 
     # tell everyone that the user joined the chat
     msg = f"{username} has joined the chat!"
-    print(len(clients))
+    print(f"Amount of pepole conected: {len(clients)+1}")
     broadcast(bytes(msg, "utf8"))
 
     # add the user to the clients list
@@ -247,8 +248,11 @@ def handle_client(client, username, hostname):  # Takes client socket as argumen
             # if the message is for the server to shutdown
             elif msg == bytes("{serverQuit}", "utf8"):
                 client.close()
-                del clients[client]
-                quit()
+                for AClient in clients:
+                    AClient.close()
+                    del clients[AClient]
+                break
+                
 
             # if the message is quit then
             else:
