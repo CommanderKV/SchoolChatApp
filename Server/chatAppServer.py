@@ -103,55 +103,63 @@ def handle_sending_screenshare(client):
     global clients
     global sending_screenshares
 
-    run = True
-    while run:
-        # running or not?
-        msgSize = int.from_bytes(client.recv(1), byteorder="big")
-        print(f"msgSize: '{msgSize}'")
-        msg = client.recv(msgSize).decode("utf-8")
-        print(f"msg: '{msg}'")
+    try:
+        run = True
+        while run:
+            # running or not?
+            msgSize = int.from_bytes(client.recv(1), byteorder="big")
+            print(f"msgSize: '{msgSize}'")
 
-        continueTF = True if msg == "True" else False
-        if continueTF == False:
-            run = False
-            break
-            
+            msg = client.recv(msgSize).decode("utf-8")
+            print(f"msg: '{msg}'")
 
-        # get the size of the image
-        imsize1Len = int.from_bytes(client.recv(1), byteorder="big")
-        imsize1 = int.from_bytes(client.recv(imsize1Len), byteorder="big")
-        imsize1 *= 100
+            continueTF = True if msg == "True" else False
+            if continueTF == False:
+                run = False
+                break
+                
 
-        imsize2Len = int.from_bytes(client.recv(1), byteorder="big")
-        imsize2 = int.from_bytes(client.recv(imsize2Len), byteorder="big")
-        imsize2 *= 100
+            # get the size of the image
+            imsize1Len = int.from_bytes(client.recv(1), byteorder="big")
+            imsize1 = int.from_bytes(client.recv(imsize1Len), byteorder="big")
+            imsize1 *= 100
 
-        imsize = (
-            imsize1, 
-            imsize2
-        )
-        print(f"imsize: '{imsize}'")
+            imsize2Len = int.from_bytes(client.recv(1), byteorder="big")
+            imsize2 = int.from_bytes(client.recv(imsize2Len), byteorder="big")
+            imsize2 *= 100
 
-        # get data on the image
-        size_len = int.from_bytes(client.recv(1), byteorder="big")
-        print(f"size_len: '{size_len}'")
+            imsize = (
+                imsize1, 
+                imsize2
+            )
+            print(f"imsize: '{imsize}'")
 
-        size = int.from_bytes(client.recv(size_len), byteorder="big")
-        print(f"size: '{size}'")
+            # get data on the image
+            size_len = int.from_bytes(client.recv(1), byteorder="big")
+            print(f"size_len: '{size_len}'")
 
-        pixels = decompress(convertPixels(client, size))
-        print(f"pixels len: '{len(pixels)}'")
+            size = int.from_bytes(client.recv(size_len), byteorder="big")
+            print(f"size: '{size}'")
 
-        #          Username of their already 
-        #              signed in account, pixels, size,  type
-        screenshares[clients[client]] = [pixels, imsize, "RGB"]
+            pixels = decompress(convertPixels(client, size))
+            print(f"pixels len: '{len(pixels)}'")
+
+            #          Username of their already 
+            #              signed in account, pixels, size,  type
+            screenshares[clients[client]] = [pixels, imsize, "RGB"]
     
-    print(screenshares.keys())
+    except:
+        run = False
+        client.close()
+        del screenshares[clients[client]]
+        del sending_screenshares[client]
+    
     for name in screenshares:
         if name == clients[client]:
             print(f"Selecting this to delete: '{name}'")
         else:
             print(name)
+
     del screenshares[clients[client]]
     del sending_screenshares[client]
 
@@ -203,7 +211,6 @@ def handle_reciveing_screenshare(client):
             # send the type of image
             client.sendall(bytes(screenshares[username][2], "utf-8"))
 
-    
 
 def handle_client(client, username):  # Takes client socket as argument.
     """Handles a single client connection."""
