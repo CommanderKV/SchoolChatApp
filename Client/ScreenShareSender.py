@@ -42,18 +42,18 @@ def send_img(img, sender):
     # send the size of the image
     imsize1 = int(imsize[0]/100)
     size1 = (imsize1.bit_length() + 7) // 8
-    sender.sendall(bytes([size1]))
+    sender.sendall(size1.to_bytes(len(str(size1)), byteorder="big"))
     print(f"Sending size1: '{size1}'")
 
-    sender.sendall(bytes([imsize1]))
+    sender.sendall(imsize1.to_bytes(len(str(imsize1)), byteorder="big"))
     print(f"Sending imsize1: '{imsize1}'")
 
     imsize1 = int(imsize[1]/100)
     size1 = (imsize1.bit_length() + 7) // 8
-    sender.sendall(bytes([size1]))
+    sender.sendall(size1.to_bytes(len(str(size1)), byteorder="big"))
     print(f"Sending size2: '{size1}'")
 
-    sender.sendall(bytes(imsize1))
+    sender.sendall(imsize1.to_bytes(len(str(imsize1)), byteorder="big"))
     print(f"Sending imsize2: '{imsize1}'")
 
     # send the size of pixels length
@@ -82,6 +82,7 @@ def screenshare_picture_taker(sender):
             msg = len("True")
             sender.sendall(bytes([msg]))
             print(f"Sending msg: '{msg}'")
+
             sender.sendall(bytes("True", "utf-8"))
             print("Sending countinue statment: 'True'")
 
@@ -90,7 +91,7 @@ def screenshare_picture_taker(sender):
             send_img(img, sender)
         
         # send a stop sharing signal
-        sender.sendall(bytes(len("False")))
+        sender.sendall(bytes([len("False")]))
         sender.sendall(bytes("False", "utf-8"))
         print("Sending countinue statment: 'False'")
 
