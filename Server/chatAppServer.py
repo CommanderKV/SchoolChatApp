@@ -61,6 +61,7 @@ def accept_incoming_connections():
 
             # save the screenshare acoount
             reciveing_screenshare[client] = client_address
+            clients[client] = []
 
             # start a thread to handle reciving screenshare accounts
             Thread(target=handle_reciveing_screenshare, args=(client,)).start()
