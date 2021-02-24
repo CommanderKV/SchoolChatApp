@@ -10,6 +10,7 @@ sending_screenshares = {}
 screenshares = {}
 usernames = {}
 addresses = {}
+nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
 
 HOST = "0.0.0.0"
 PORT = 5050
@@ -46,6 +47,15 @@ def accept_incoming_connections():
         username = client.recv(BUFSIZ).decode("utf8")
         print(username)
         if username not in ScreenShareUsernames:
+            
+            # add a 1 to the end of the username if the username is already signed in
+            for c in clients:
+                if clients[c] == username:
+                    temp = username[-1:]
+                    if temp in nums:
+                        temp = str(int(temp)+1)
+                    else:
+                        username = str(username)+"0"
 
             # send welcome message
             welcome = f"[MSG] Welcome {username}! If you ever want to quit, type '"+"{quit}"+"' to exit."
@@ -61,7 +71,7 @@ def accept_incoming_connections():
         elif username == reciveing_screenshare:
 
             # save the screenshare acoount
-            reciveing_screenshare[client] = client_address
+            reciveing_screenshares[client] = client_address
 
             # start a thread to handle reciving screenshare accounts
             Thread(target=handle_reciveing_screenshare, args=(client,), daemon=True).start()
@@ -237,7 +247,7 @@ def handle_client(client, username, hostname):  # Takes client socket as argumen
 
         if msg != None:
             # if the message is not quit then send msg
-            if msg != bytes("{quit}", "utf8") or msg != bytes("{serverQuit}", "utf8"):
+            if msg != bytes("{quit}", "utf8") and msg != bytes("{serverQuit}", "utf8"):
                 try:
                     broadcast(msg, username+": ")
                 except:
@@ -246,12 +256,14 @@ def handle_client(client, username, hostname):  # Takes client socket as argumen
                     break
             
             # if the message is for the server to shutdown
-            elif msg == bytes("{serverQuit}", "utf8"):
-                client.close()
-                for AClient in clients:
-                    AClient.close()
-                    del clients[AClient]
-                break
+            elif msg == bytes("{serverquit}", "utf8"):
+                try:
+                    broadcast(msg, msgTF=False)
+                except:
+                    client.close()
+                    del clients[client]
+                    break
+                
                 
 
             # if the message is quit then

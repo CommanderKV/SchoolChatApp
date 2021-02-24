@@ -18,6 +18,10 @@ def receive():
             if "[MSG] " in msg:
                 msg_list.insert(tkinter.END, msg.replace("[MSG] ", ""))
                 msg_list.see("end")
+            elif msg == "{quit}":
+                client_socket.close()
+                top.quit()
+                break
         except OSError:  # Possibly client has left the chat.
             break
 
