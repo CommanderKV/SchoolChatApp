@@ -8,6 +8,7 @@ clients = {}
 reciveing_screenshares = {}
 sending_screenshares = {}
 screenshares = {}
+usernames = {}
 addresses = {}
 
 HOST = "0.0.0.0"
@@ -54,7 +55,7 @@ def accept_incoming_connections():
             addresses[client] = client_address
 
             # start a individual thread for this client
-            Thread(target=handle_client, args=(client, username, client_address[1],)).start()
+            Thread(target=handle_client, args=(client, username, client_address[0],)).start()
         
         # if the account is a screenshare account
         elif username == reciveing_screenshare:
@@ -72,7 +73,7 @@ def accept_incoming_connections():
             sending_screenshares[client] = client_address
 
             # start a thread to handle sending screenshare accounts
-            Thread(target=handle_sending_screenshare, args=(client, client_address[1],)).start()
+            Thread(target=handle_sending_screenshare, args=(client, client_address[0],)).start()
         
         # if the account is requesting the amount of screens give it to them
         elif username == amount_screenshare:
@@ -146,23 +147,21 @@ def handle_sending_screenshare(client, hostname):
 
             #          Username of their already 
             #              signed in account, pixels, size,  type
-            screenshares[clients[hostname]] = [pixels, imsize, "RGB"]
+            screenshares[usernames[hostname]] = [pixels, imsize, "RGB"]
     
     except:
         run = False
         client.close()
-        del screenshares[clients[client]]
+
+        for name in screenshares:
+            if name == usernames[hostname]:
+                print(f"Selecting this to delete: '{name}'")
+            else:
+                print(name)
+
+        del screenshares[usernames[hostname]]
         del sending_screenshares[client]
-    
-    for name in screenshares:
-        if name == clients[client]:
-            print(f"Selecting this to delete: '{name}'")
-        else:
-            print(name)
-
-    del screenshares[clients[client]]
-    del sending_screenshares[client]
-
+        
 
 def handle_reciveing_screenshare(client):
     """Handles all of the reciving conections"""
@@ -222,7 +221,8 @@ def handle_client(client, username, hostname):  # Takes client socket as argumen
     broadcast(bytes(msg, "utf8"))
 
     # add the user to the clients list
-    clients[hostname] = username
+    clients[client] = username
+    usernames[hostname] = username
 
     while True:
         # recive a message  
