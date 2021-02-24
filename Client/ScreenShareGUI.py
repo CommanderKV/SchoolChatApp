@@ -431,10 +431,8 @@ def Main(addr):
                 OnOff = True if OnOff == False else False
                 if OnOff is True:
                     ScreenShareControlScreen.buttons[0].color = (0, 255, 0)
-                    OnOff = False
                 else:
                     ScreenShareControlScreen.buttons[0].color = (255, 0, 0)
-                    OnOff = True
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
