@@ -54,7 +54,7 @@ def accept_incoming_connections():
             addresses[client] = client_address
 
             # start a individual thread for this client
-            Thread(target=handle_client, args=(client, username)).start()
+            Thread(target=handle_client, args=(client, username, client_address[1],)).start()
         
         # if the account is a screenshare account
         elif username == reciveing_screenshare:
@@ -72,7 +72,7 @@ def accept_incoming_connections():
             sending_screenshares[client] = client_address
 
             # start a thread to handle sending screenshare accounts
-            Thread(target=handle_sending_screenshare, args=(client,)).start()
+            Thread(target=handle_sending_screenshare, args=(client, client_address[1],)).start()
         
         # if the account is requesting the amount of screens give it to them
         elif username == amount_screenshare:
@@ -96,7 +96,7 @@ def convertPixels(reciver, length):
     return buf
 
 
-def handle_sending_screenshare(client):
+def handle_sending_screenshare(client, hostname):
     """Handling each sending ScreenShare account"""
     # client is a socket conection
     global screenshares
@@ -146,7 +146,7 @@ def handle_sending_screenshare(client):
 
             #          Username of their already 
             #              signed in account, pixels, size,  type
-            screenshares[clients[client]] = [pixels, imsize, "RGB"]
+            screenshares[clients[hostname]] = [pixels, imsize, "RGB"]
     
     except:
         run = False
@@ -212,7 +212,7 @@ def handle_reciveing_screenshare(client):
             client.sendall(bytes(screenshares[username][2], "utf-8"))
 
 
-def handle_client(client, username):  # Takes client socket as argument.
+def handle_client(client, username, hostname):  # Takes client socket as argument.
     """Handles a single client connection."""
     global clients
 
@@ -222,7 +222,7 @@ def handle_client(client, username):  # Takes client socket as argument.
     broadcast(bytes(msg, "utf8"))
 
     # add the user to the clients list
-    clients[client] = username
+    clients[hostname] = username
 
     while True:
         # recive a message  
