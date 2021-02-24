@@ -80,7 +80,7 @@ def accept_incoming_connections():
 
             # get the amount of current screenshares
             length_screenshares = len(screenshares)
-            amount = int.to_bytes(((length_screenshares.bit_length()+7)//8), byteorder="big")
+            amount = length_screenshares.to_bytes(((length_screenshares.bit_length()+7)//8), byteorder="big")
 
             # send back the requested data
             client.sendall(amount)
@@ -266,6 +266,7 @@ def handle_client(client, username, hostname):  # Takes client socket as argumen
 
                 # close their client down
                 break
+    print(f"Amount of pepole conected: {len(clients)}")
 
 
 def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.

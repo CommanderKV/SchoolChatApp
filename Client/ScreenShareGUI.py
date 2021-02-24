@@ -59,7 +59,7 @@ class screenshare(pygame.Surface):
 
             # tell the server that i am looking to recive data
             ip = gethostbyname(gethostname())
-            self.reciver.sendall(bytes(f"[SCREENSHARE_{ip}_R]"), "utf-8")
+            self.reciver.sendall(bytes(f"[SCREENSHARE_{ip}_R]", "utf-8"))
     
     def draw(self, win):
         self.fill(self.bg)
