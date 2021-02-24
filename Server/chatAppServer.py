@@ -61,7 +61,6 @@ def accept_incoming_connections():
 
             # save the screenshare acoount
             reciveing_screenshare[client] = client_address
-            clients[client] = []
 
             # start a thread to handle reciving screenshare accounts
             Thread(target=handle_reciveing_screenshare, args=(client,)).start()
@@ -215,6 +214,7 @@ def handle_reciveing_screenshare(client):
 
 def handle_client(client, username):  # Takes client socket as argument.
     """Handles a single client connection."""
+    global clients
 
     # tell everyone that the user joined the chat
     msg = f"{username} has joined the chat!"
