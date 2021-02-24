@@ -125,7 +125,7 @@ def handle_sending_screenshare(client):
         imsize2Len = int.from_bytes(client.recv(1), byteorder="big")
         imsize2 = int.from_bytes(client.recv(imsize2Len), byteorder="big")
         imsize2 *= 100
-        
+
         imsize = (
             imsize1, 
             imsize2
@@ -140,6 +140,7 @@ def handle_sending_screenshare(client):
         print(f"size: '{size}'")
 
         pixels = decompress(convertPixels(client, size))
+        print(f"pixels len: '{len(pixels)}'")
 
         #          Username of their already 
         #              signed in account, pixels, size,  type
