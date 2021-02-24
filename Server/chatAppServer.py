@@ -247,7 +247,7 @@ def handle_client(client, username, hostname):  # Takes client socket as argumen
 
         if msg != None:
             # if the message is not quit then send msg
-            if msg != bytes("{quit}", "utf8") and msg != bytes("{serverQuit}", "utf8"):
+            if msg != bytes("{quit}", "utf8") and msg != bytes("{serverquit}", "utf8"):
                 try:
                     broadcast(msg, username+": ")
                 except:
@@ -257,7 +257,9 @@ def handle_client(client, username, hostname):  # Takes client socket as argumen
             
             # if the message is for the server to shutdown
             elif msg == bytes("{serverquit}", "utf8"):
+                print("Kicking everyone from server")
                 try:
+                    msg = bytes("{quit}", "utf-8")
                     broadcast(msg, msgTF=False)
                 except:
                     client.close()
