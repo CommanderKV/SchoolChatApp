@@ -16,6 +16,11 @@ def receive():
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8")
             if "[MSG] " in msg:
+                
+                msg_text = tkinter.Text(top, wrap=tkinter.WORD)
+                msg_text.insert(tkinter.END, msg.replace("[MSG] ", ""))
+                msg_text.pack()
+
                 msg_list.insert(tkinter.END, msg.replace("[MSG] ", ""))
                 msg_list.see("end")
             elif msg == "{quit}":
