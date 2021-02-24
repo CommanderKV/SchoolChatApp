@@ -170,7 +170,6 @@ def stopScreenSharing():
     # set live and sharing_screen to False
     Live = False
     Sharing_Screen = False
-    threads["sender.main"]._stop()
 
 def switchScreenTo(screentopic):
     for screen in screens:
