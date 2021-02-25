@@ -96,35 +96,43 @@ class screenshare(pygame.Surface):
             )
 
             self.reciver.sendall(pos)
+            print(f"Sending: '{self.pos}, {pos}'")
 
             # tell the server that we are still here
             self.reciver.sendall(bytes("True", "utf-8"))
+            print(f"Sending: 'True'")
 
             # get the username from the server
             username = self.reciver.recv(1024).decode("utf-8")
+            print(f"Recived: '{username}'")
 
             # get pixels len length
             pixels_length_len = int.from_bytes(
                 self.reciver.recv(1), 
                 byteorder="big"
             )
+            print(f"Recived: '{pixels_length_len}'")
 
             # get pixels len
             pixels_len = int.from_bytes(
                 self.reciver.recv(pixels_length_len), 
                 byteorder="big"
             )
+            print(f"Recived: '{pixels_len}'")
 
             # get the pixels from the server
             pixels = decompress(self.reciver.recv(pixels_len))
+            print(f"Recived: '{str(pixels)[:10]}...'")
 
             # get the image size from the server
             imsize1 = int.from_bytes(self.reciver.recv(1024), byteorder="big")
             imsize2 = int.from_bytes(self.reciver.recv(1024), byteorder="big")
             imsize = (imsize1, imsize2)
+            print(f"Recived: '{imsize}'")
 
             # get the type of image from the server
             imType = self.reciver.recv(1024).decode("utf-8")
+            print(f"Recived: '{imType}'")
 
             img = self.image.fromstring(pixels, imsize, imType)
             self.blit(img, (0, 0))
