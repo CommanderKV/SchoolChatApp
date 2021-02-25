@@ -90,20 +90,37 @@ class screenshare(pygame.Surface):
 
         else:
             # tell the server the screenshare we want
-            self.reciver.sendall(bytes([self.pos]))
+            pos = self.pos.to_bytes(
+                ((self.pos.bit_length()+7)//8), 
+                byteorder="big"
+            )
+
+            self.reciver.sendall(pos)
 
             # tell the server that we are still here
             self.reciver.sendall(bytes("True", "utf-8"))
 
             # get the username from the server
-            username = self.reciver.recv(1024)
+            username = self.reciver.recv(1024).decode("utf-8")
+
+            # get pixels len length
+            pixels_length_len = int.from_bytes(
+                self.reciver.recv(1), 
+                byteorder="big"
+            )
+
+            # get pixels len
+            pixels_len = int.from_bytes(
+                self.reciver.recv(pixels_length_len), 
+                byteorder="big"
+            )
 
             # get the pixels from the server
-            pixels = decompress(self.reciver.recv(1024))
+            pixels = decompress(self.reciver.recv(pixels_len))
 
             # get the image size from the server
-            imsize1 = int.from_bytes(self.reciver.recv(1024))
-            imsize2 = int.from_bytes(self.reciver.recv(1024))
+            imsize1 = int.from_bytes(self.reciver.recv(1024), byteorder="big")
+            imsize2 = int.from_bytes(self.reciver.recv(1024), byteorder="big")
             imsize = (imsize1, imsize2)
 
             # get the type of image from the server
@@ -239,6 +256,7 @@ def updateViewScreensScreens(ViewScreensPadding, host, port):
                         y += (sizes[1]+ViewScreensPadding) if i == 3 or i == 6 or i == 9 else 0
 
                     screens[1].screenshares = updatedScreens
+                    print(len(screens[1].screenshares))
 
         else:
             sharedVars.release()
@@ -285,11 +303,9 @@ def Main(addr):
 
     host, port = addr
 
-    print("ScreenShare menu oppend", WIN)
     pygame.init()
     WIN = pygame.display.set_mode(SIZE)
     clock = pygame.time.Clock()
-    print("ScreenShare menu oppend", WIN)
 
     if True:
         MainMenuButtons = [
@@ -413,12 +429,8 @@ def Main(addr):
         t = Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,), daemon=True)
         threads["updateViewScreensScreens"] = t
         t.start()
-        t = 0
 
     while RUN:
-        if t == 0:
-            print("In while loop")
-            t += 1
         clock.tick(60)
         pygame.display.set_caption("Screen Sharing")
 
@@ -454,7 +466,6 @@ def Main(addr):
         else:
             break
     
-    print("Out of loop")
     exitProgram()
 
     # set vairables that other threads are cheking for

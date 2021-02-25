@@ -159,7 +159,7 @@ def handle_sending_screenshare(client, hostname):
             size = int.from_bytes(client.recv(size_len), byteorder="big")
             #print(f"size: '{size}'")
 
-            pixels = decompress(convertPixels(client, size))
+            pixels = convertPixels(client, size)
             #print(f"pixels len: '{len(pixels)}'")
 
             #          Username of their already 
@@ -220,12 +220,36 @@ def handle_reciveing_screenshare(client):
             # send the username
             client.sendall(bytes(str(username), "utf-8"))
 
+            # send the length of pixels length
+            pixels_len = len(screenshares[username][0])
+            pixels_length_len = len(pixels_len).to_bytes(
+                ((len(len(screenshares[username][0]))+7)//8), 
+                byteorder="big"
+            )
+            client.sendall(pixels_length_len)
+
+            # send the pixels length
+            pixels_len = pixels_len.to_bytes(
+                ((pixels_len.bit_length()+7)//8),
+                byteorder="big"
+            )
+            client.sendall(pixels_len)
+
             # send the pixels
             client.sendall(screenshares[username][0])
 
             # send the image size
-            client.sendall(bytes(str(screenshares[username][1][0]), "utf-8"))
-            client.sendall(bytes(str(screenshares[username][1][1]), "utf-8"))
+            client.sendall(screenshares[username][1][0].to_bytes(
+                    ((screenshares[username][1][0].bit_length()+7)//8), 
+                    byteorder="big"
+                )
+            )
+
+            client.sendall(screenshares[username][1][1].to_bytes(
+                    ((screenshares[username][1][1].bit_length()+7)//8), 
+                    byteorder="big"
+                )
+            )
 
             # send the type of image
             client.sendall(bytes(screenshares[username][2], "utf-8"))

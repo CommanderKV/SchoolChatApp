@@ -67,7 +67,6 @@ def reset(event=None):
 
 def openMenu():
     global ADDR
-    print("attempting to open a screenshare menu")
     SShareGUI.Main(ADDR)
 
 
