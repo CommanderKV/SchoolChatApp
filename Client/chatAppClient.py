@@ -17,13 +17,10 @@ def receive():
             msg = client_socket.recv(BUFSIZ).decode("utf8")
             if "[MSG] " in msg:
                 
-                msg_text = tkinter.Text(msg_list, wrap=tkinter.WORD)
-                msg_text.insert(tkinter.END, msg.replace("[MSG] ", ""))
-                msg_text.pack()
+                msg = msg.replace("[MSG] ", "")
+                msg_area.insert(tkinter.END, msg+"\n")
+                msg_area.yview(tkinter.END)
 
-                msg_list.insert(tkinter.END, msg_text)
-                msg_list.see("end")
-                
             elif msg == "{quit}":
                 client_socket.close()
                 top.quit()
@@ -86,10 +83,17 @@ my_msg = tkinter.StringVar()  # For the messages to be sent.
 my_msg.set("Type your messages here.")
 scrollbar = tkinter.Scrollbar(messages_frame)  # To navigate through past messages.
 # Following will contain the messages.
-msg_list = tkinter.Listbox(messages_frame, height=25, width=100, yscrollcommand=scrollbar.set)
+msg_area = tkinter.Text(
+    messages_frame, 
+    height=25, 
+    width=83, 
+    yscrollcommand=scrollbar.set, 
+    font=("comicsans", 10), 
+    wrap=tkinter.WORD
+)
 scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
-msg_list.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
-msg_list.pack()
+msg_area.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
+msg_area.pack()
 messages_frame.pack()
 
 # making the entry field for input from users
