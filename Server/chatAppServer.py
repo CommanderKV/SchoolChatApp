@@ -187,7 +187,7 @@ def handle_reciveing_screenshare(client):
 
     # client is a socket conection
     msg = client.recv(1024)
-    allOrNone = True if msg.decode("utf-8") == "ALL" else int.from_bytes(msg)
+    allOrNone = True if msg.decode("utf-8") == "ALL" else int.from_bytes(msg, byteorder="big")
 
     run = True
     while run:
