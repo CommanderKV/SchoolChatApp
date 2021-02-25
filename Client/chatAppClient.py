@@ -82,6 +82,7 @@ messages_frame = tkinter.Frame(top)
 my_msg = tkinter.StringVar()  # For the messages to be sent.
 my_msg.set("Type your messages here.")
 scrollbar = tkinter.Scrollbar(messages_frame)  # To navigate through past messages.
+
 # Following will contain the messages.
 msg_area = tkinter.Text(
     messages_frame, 
@@ -116,13 +117,17 @@ send_button.pack(side=tkinter.RIGHT, padx=20, pady=20)
 
 top.protocol("WM_DELETE_WINDOW", on_closing)
 
+chars = [n for n in "',<>;:[]{}()-_+=`~!@#$%^&*\\|"+'"'+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+
 #----Now comes the sockets part----
 HOST = input('Enter host: ')
 PORT = input('Enter port: ')
 if not PORT:
-    PORT = 80
+    PORT = 5050
 else:
     PORT = int(PORT)
+
+HOST = [HOST.replace(n, "") for n in chars][-1]
 
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
