@@ -188,11 +188,16 @@ def handle_reciveing_screenshare(client):
     # client is a socket conection
     msg = client.recv(1024)
     allOrNone = True if msg.decode("utf-8") == "ALL" else int.from_bytes(msg, byteorder="big")
+    msg_str = msg.decode("utf-8")
+    msg_int = int.from_bytes(msg, byteorder="big")
+    print(f"Recived: '{msg_str} or {msg_int}'")
 
     run = True
     while run:
         # running or not?
-        continueTF = True if client.recv(1024).decode("utf-8") == "True" else False
+        conn = client.recv(1024).decode("utf-8")
+        continueTF = True if conn == "True" else False
+        print(f"Recived: '{conn}'")
         if continueTF == False:
             run = False
             break
