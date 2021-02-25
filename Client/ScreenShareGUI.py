@@ -133,9 +133,9 @@ class screenshare(pygame.Surface):
             print(f"Recived: '{str(pixels)[:10]}...'")
 
             # get the image size from the server
-            imsize1 = int.from_bytes(self.reciver.recv(1024), byteorder="big")
-            imsize2 = int.from_bytes(self.reciver.recv(1024), byteorder="big")
-            imsize = (imsize1, imsize2)
+            imsize1 = int.from_bytes(self.reciver.recv(1), byteorder="big")
+            imsize2 = int.from_bytes(self.reciver.recv(1), byteorder="big")
+            imsize = (int(imsize1)*100, int(imsize2)*100)
             print(f"Recived: '{imsize}'")
 
             # get the type of image from the server
