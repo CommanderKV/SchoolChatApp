@@ -184,9 +184,13 @@ def handle_reciveing_screenshare(client):
     """Handles all of the reciving conections"""
     #    dict\/      str\/    str?\/ tupple\/  str\/
     # screenshares[username] = [pixels, imsize, "RGB"]
-
     # client is a socket conection
-    msg = client.recv(1024)
+
+    # get the size of all or a num
+    size - int.from_bytes(client.recv(1), byteorder="big")
+
+    # get all or a num
+    msg = client.recv(size)
     allOrNone = True if msg.decode("utf-8") == "ALL" else int.from_bytes(msg, byteorder="big")
     msg_str = msg.decode("utf-8")
     msg_int = int.from_bytes(msg, byteorder="big")

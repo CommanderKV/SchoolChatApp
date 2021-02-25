@@ -95,7 +95,14 @@ class screenshare(pygame.Surface):
                 ((pos.bit_length()+7)//8), 
                 byteorder="big"
             )
+            # send the length of pos
+            pos_len = ((pos.bit_length()+7)//8)
+            self.reciver.sendall(pos_len.to_bytes(
+                ((pos_len.bit_length()+7)//8), 
+                byteorder="big"
+            ))
 
+            # send the number
             self.reciver.sendall(pos)
             print(f"Sending: '{self.pos}, {pos}'")
 
