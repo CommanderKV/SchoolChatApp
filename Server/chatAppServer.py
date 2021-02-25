@@ -221,7 +221,7 @@ def handle_reciveing_screenshare(client):
         else:
             
             # get the username
-            username = [n for n in screenshares][allOrNone]
+            username = [n for n in screenshares][allOrNone-1]
 
             # send the username
             client.sendall(bytes(str(username), "utf-8"))

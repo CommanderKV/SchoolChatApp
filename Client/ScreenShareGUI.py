@@ -90,8 +90,9 @@ class screenshare(pygame.Surface):
 
         else:
             # tell the server the screenshare we want
-            pos = self.pos.to_bytes(
-                ((self.pos.bit_length()+7)//8), 
+            pos = self.pos+1
+            pos = pos.to_bytes(
+                ((pos.bit_length()+7)//8), 
                 byteorder="big"
             )
 
