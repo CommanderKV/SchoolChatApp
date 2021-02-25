@@ -219,6 +219,7 @@ def handle_reciveing_screenshare(client):
 
             # send the username
             client.sendall(bytes(str(username), "utf-8"))
+            print(f"Sending: '{username}'")
 
             # send the length of pixels length
             pixels_len = len(screenshares[username][0])
@@ -227,6 +228,7 @@ def handle_reciveing_screenshare(client):
                 byteorder="big"
             )
             client.sendall(pixels_length_len)
+            print(f"Sending: '{len(pixels_len)}, {pixels_length_len}'")
 
             # send the pixels length
             pixels_len = pixels_len.to_bytes(
@@ -234,9 +236,11 @@ def handle_reciveing_screenshare(client):
                 byteorder="big"
             )
             client.sendall(pixels_len)
+            print(f"Sending: '{len(screenshares[username][0])}, {pixels_len}'")
 
             # send the pixels
             client.sendall(screenshares[username][0])
+            print(f"Sending: '{str(screenshares[username][0])[:10]}'")
 
             # send the image size
             client.sendall(screenshares[username][1][0].to_bytes(
@@ -244,15 +248,18 @@ def handle_reciveing_screenshare(client):
                     byteorder="big"
                 )
             )
+            print(f"Sending: '{screenshares[username][1][0]}'")
 
             client.sendall(screenshares[username][1][1].to_bytes(
                     ((screenshares[username][1][1].bit_length()+7)//8), 
                     byteorder="big"
                 )
             )
+            print(f"Sending: '{screenshares[username][1][1]}'")
 
             # send the type of image
             client.sendall(bytes(screenshares[username][2], "utf-8"))
+            print(f"Sending: '{screenshares[username][2]}'")
 
 
 def handle_client(client, username, hostname):  # Takes client socket as argument.
