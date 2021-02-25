@@ -43,8 +43,14 @@ def accept_incoming_connections():
         ]
 
         # get the username from the user and send out a welcome message if
-        # the user is not a screenshare account 
-        username = client.recv(BUFSIZ).decode("utf8")
+        # the user is not a screenshare account
+        
+        try:
+            username = client.recv(BUFSIZ).decode("utf8")
+        except:
+            client.close()
+            continue
+
         print(username)
         if username not in ScreenShareUsernames:
             
