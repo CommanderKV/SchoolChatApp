@@ -187,7 +187,7 @@ def handle_reciveing_screenshare(client):
     # client is a socket conection
 
     # get the size of all or a num
-    size - int.from_bytes(client.recv(1), byteorder="big")
+    size = int.from_bytes(client.recv(1), byteorder="big")
 
     # get all or a num
     msg = client.recv(size)
