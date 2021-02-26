@@ -233,7 +233,7 @@ def updateViewScreensScreens(ViewScreensPadding, host, port):
 
         if len(screens) > 0:
             if screens[1].active == True:
-                if time.time() - start >= 10.0:
+                if time.time() - start >= 3.0:
                     start = time.time()
 
                     updatedScreens = []
@@ -250,26 +250,32 @@ def updateViewScreensScreens(ViewScreensPadding, host, port):
                     # ask for the Amount of screens that are being shared
                     guiSocket.sendall(bytes(f"[SCREENSHARE_{ip}_A]", "utf-8"))
 
+                    # get the length of the amount
+                    length = int.from_bytes(guiSocket.recv(1), byteorder="big")
+
                     # get the amount of screens
-                    Amount = int.from_bytes(guiSocket.recv(1024), byteorder="big")
+                    Amount = int.from_bytes(guiSocket.recv(length), byteorder="big")
 
                     sizes = (
-                        int(SIZE[0]/3), 
-                        int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)/3)
+                        int(SIZE[0]//3), 
+                        int(int(SIZE[1]-int(int(ViewScreensPadding*2)+30)+ViewScreensPadding)//3)
                     )
-
-                    for i in range(Amount):
-                        updatedScreens.append(
-                            screenshare(
-                                x,
-                                y,
-                                size=sizes,
-                                thisPc=False, 
-                                pos=i
+                    
+                    if Amount > last_Amount:
+                        for i in range(Amount):
+                            updatedScreens.append(
+                                screenshare(
+                                    x,
+                                    y,
+                                    size=sizes,
+                                    thisPc=False, 
+                                    pos=i
+                                )
                             )
-                        )
-                        x = (x + (sizes[0] + ViewScreensPadding)) if i != 3 or i != 6 or i != 9 else ViewScreensPadding
-                        y += (sizes[1]+ViewScreensPadding) if i == 3 or i == 6 or i == 9 else 0
+                            x = (x + (sizes[0] + ViewScreensPadding)) if i != 3 or i != 6 or i != 9 else ViewScreensPadding
+                            y += (sizes[1]+ViewScreensPadding) if i == 3 or i == 6 or i == 9 else 0
+                    
+                    last_Amount = Amount
 
                     screens[1].screenshares = updatedScreens
                     print(len(screens[1].screenshares))

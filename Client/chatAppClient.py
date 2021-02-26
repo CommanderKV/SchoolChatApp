@@ -3,6 +3,8 @@ from socket import AF_INET, socket, SOCK_STREAM, gethostname, gethostbyname
 import requests
 from threading import Thread
 import ScreenShareGUI as SShareGUI
+from functools import partial
+import HeartBeat
 import tkinter
 import time
 import sys
@@ -18,7 +20,9 @@ def receive():
             if "[MSG] " in msg:
                 
                 msg = msg.replace("[MSG] ", "")
+                msg_area.configure(state="normal")
                 msg_area.insert(tkinter.END, msg+"\n")
+                msg_area.configure(state="disabled")
                 msg_area.yview(tkinter.END)
 
             elif msg == "{quit}":
@@ -45,17 +49,15 @@ def send(event=None):  # event is passed by binders.
 
 def on_closing(event=None):
     """This function is to be called when the window is closed."""
-    global top
+    global top, STOP_HEARTBEAT
 
     # when window is close send a quit message to the server as well
     my_msg.set("{quit}")
     try:
         send()
     finally:
-        print(2)
+        STOP_HEARTBEAT = True
         top.quit()
-        print("top.quit() passed")
-        raise KeyboardInterrupt
 
 
 def reset(event=None):
@@ -73,6 +75,42 @@ def openMenu():
 def openScreenShareMenu(event=None):
     Thread(target=openMenu, daemon=True).start()
 
+
+def openNewWindow(): 
+
+    def setHostPort(host, port, newWindow):
+        global HOST, PORT
+        HOST = host
+        PORT = port
+        newWindow.destroy()
+        top.focus_force()
+      
+    # Toplevel object which will  
+    # be treated as a new window 
+    newWindow = tkinter.Toplevel(top) 
+  
+    # sets the title of the 
+    # Toplevel widget 
+    newWindow.title("Login") 
+  
+    # sets the geometry of toplevel 
+    newWindow.geometry("205x67") 
+    
+    #username label and text entry box
+    hostLabel = tkinter.Label(newWindow, text="Host").grid(row=0, column=0)
+    host = tkinter.StringVar()
+    hostEntry = tkinter.Entry(newWindow, textvariable=host).grid(row=0, column=1)
+
+    #password label and password entry box
+    portLabel = tkinter.Label(newWindow,text="Port").grid(row=1, column=0)
+    port = tkinter.StringVar()
+    portEntry = tkinter.Entry(newWindow, textvariable=port).grid(row=1, column=1)
+
+    setTheHostAndPort = partial(setHostPort, host, port, newWindow)
+
+    login = tkinter.Button(newWindow, text="Login", command=setTheHostAndPort).grid(row=2, column=0)
+
+
 top = tkinter.Tk()
 top.title("School Chat")
 
@@ -89,8 +127,11 @@ msg_area = tkinter.Text(
     width=83, 
     yscrollcommand=scrollbar.set, 
     font=("comicsans", 10), 
-    wrap=tkinter.WORD
+    wrap=tkinter.WORD,
+    state="disabled"
 )
+
+
 scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
 msg_area.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
 msg_area.pack()
@@ -119,8 +160,9 @@ top.protocol("WM_DELETE_WINDOW", on_closing)
 chars = [n for n in "',<>;:[]{}()-_+=`~!@#$%^&*\\|"+'"'+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]
 
 #----Now comes the sockets part----
-HOST = input('Enter host: ')
-PORT = input('Enter port: ')
+# HOST = input('Enter host: ')
+# PORT = input('Enter port: ')
+openNewWindow()
 if not PORT:
     PORT = 5050
 else:
@@ -132,8 +174,16 @@ BUFSIZ = 1024
 ADDR = (HOST, PORT)
 
 client_socket = socket(AF_INET, SOCK_STREAM)
+client_socket.settimeout(2.0)
 client_socket.connect(ADDR)
+client_socket.settimeout(10)
 
 receive_thread = Thread(target=receive, daemon=True)
 receive_thread.start()
-tkinter.mainloop()  # Starts GUI execution.
+
+STOP_HEARTBEAT = False
+
+heartBeat_Thread = Thread(target=HeartBeat.main, args=(ADDR, lambda: STOP_HEARTBEAT,), daemon=True)
+heartBeat_Thread.start()
+
+#tkinter.mainloop()  # Starts GUI execution.

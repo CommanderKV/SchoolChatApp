@@ -2,9 +2,11 @@
 from socket import AF_INET, socket, SOCK_STREAM, gethostbyname, gethostname
 from threading import Thread
 from zlib import decompress
+import HeartBeat
 
 
 clients = {}
+clients_HeartBeats = {}
 reciveing_screenshares = {}
 sending_screenshares = {}
 screenshares = {}
@@ -53,7 +55,7 @@ def accept_incoming_connections():
 
         print(username)
         if username not in ScreenShareUsernames:
-            
+
             # add a 1 to the end of the username if the username is already signed in
             for c in clients:
                 if clients[c] == username:
@@ -71,7 +73,7 @@ def accept_incoming_connections():
             addresses[client] = client_address
 
             # start a individual thread for this client
-            Thread(target=handle_client, args=(client, username, client_address[0],), daemon=True).start()
+            Thread(target=handle_client, args=(client, username, client_address[0], client_address,), daemon=True).start()
         
         # if the account is a screenshare account
         elif username == reciveing_screenshare:
@@ -95,11 +97,26 @@ def accept_incoming_connections():
         elif username == amount_screenshare:
 
             # get the amount of current screenshares
-            length_screenshares = len(screenshares)
-            amount = length_screenshares.to_bytes(((length_screenshares.bit_length()+7)//8), byteorder="big")
+            length_screenshares1 = len(screenshares)
+            length_screenshares = length_screenshares1.to_bytes(
+                ((length_screenshares1.bit_length()+7)//8), 
+                byteorder="big"
+            )
+
+            len_Length_screenshares = ((length_screenshares1.bit_length()+7)//8)
+            len_Length_screenshares = len_Length_screenshares.to_bytes(
+                ((len_Length_screenshares.bit_length()+7)//8),
+                byteorder="big"
+            )
+
+            # send the length of the amount
+            client.sendall(len_Length_screenshares)
 
             # send back the requested data
-            client.sendall(amount)
+            client.sendall(length_screenshares)
+            
+            # close the client
+            client.close()
 
 
 def convertPixels(reciver, length):
@@ -275,61 +292,100 @@ def handle_reciveing_screenshare(client):
             print(f"Sending: '{screenshares[username][2]}'")
 
 
-def handle_client(client, username, hostname):  # Takes client socket as argument.
+def handle_client(client, username, hostname, client_addr):  # Takes client socket as argument.
     """Handles a single client connection."""
-    global clients
+    global clients, usernames, clients_HeartBeats, checkpulsexit
+
+    def checkForPulse():
+        global checkpulsexit
+
+        if clients_HeartBeats[username].is_alive():
+            return True
+        else:
+            checkpulsexit = True
+            return False
 
     # tell everyone that the user joined the chat
     msg = f"{username} has joined the chat!"
     print(f"Amount of pepole conected: {len(clients)+1}")
     broadcast(bytes(msg, "utf8"))
 
+    checkpulsexit = False
+    STOP_HEARTBEAT = False
+
     # add the user to the clients list
     clients[client] = username
     usernames[hostname] = username
 
-    while True:
+    heartBeat_Thread = Thread(
+        target=HeartBeat.main, 
+        args=(client_addr, lambda: STOP_HEARTBEAT,), 
+        daemon=True)
+    clients_HeartBeats[username] = heartBeat_Thread
+    clients_HeartBeats[username].start()
+
+    while True and checkForPulse():
         # recive a message  
         try:
             msg = client.recv(BUFSIZ)
         except:
             msg = None
 
-        if msg != None:
+        if msg != None and checkForPulse():
             # if the message is not quit then send msg
-            if msg != bytes("{quit}", "utf8") and msg != bytes("{serverquit}", "utf8"):
+            if msg != bytes("{quit}", "utf8") and msg != bytes("{serverquit}", "utf8") and checkForPulse():
                 try:
-                    broadcast(msg, username+": ")
+                    if checkForPulse():
+                        broadcast(msg, username+": ")
+                    else:
+                        raise Exception
                 except:
-                    client.close()
                     del clients[client]
+                    del usernames[hostname]
+                    del clients_HeartBeats[username]
+                    STOP_HEARTBEAT = True
+                    client.close()
                     break
             
             # if the message is for the server to shutdown
-            elif msg == bytes("{serverquit}", "utf8"):
+            elif msg == bytes("{serverquit}", "utf-8") and checkForPulse():
                 print("Kicking everyone from server")
                 try:
                     msg = bytes("{quit}", "utf-8")
                     broadcast(msg, msgTF=False)
                 except:
-                    client.close()
                     del clients[client]
+                    del usernames[hostname]
+                    del clients_HeartBeats[username]
+                    STOP_HEARTBEAT = True
+                    client.close()
                     break
                 
                 
 
             # if the message is quit then
-            else:
+            elif msg == bytes("{quit}", "utf-8") and checkForPulse():
                 # close the client conection
                 client.send(bytes("[MSG] {quit}", "utf8"))
-                client.close()
+
                 del clients[client]
+                del usernames[hostname]
+                del clients_HeartBeats[username]
+                STOP_HEARTBEAT = True
+                client.close()
 
                 # tell everyone that they have left
                 broadcast(bytes(f"{username} has left the chat.", "utf8"))
 
                 # close their client down
                 break
+    
+    if checkpulsexit == True:
+        del clients[client]
+        del usernames[hostname]
+        del clients_HeartBeats[username]
+        client.close()
+
     print(f"Amount of pepole conected: {len(clients)}")
 
 
