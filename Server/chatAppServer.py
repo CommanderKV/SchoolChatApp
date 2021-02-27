@@ -459,6 +459,7 @@ def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     # sends a message to all users
     delsocks = []
     for pos, sock in enumerate(clients):
+        print(f"Clients username: '{usernames_of_clients[pos]}'")
         if clients_HeartBeats[usernames_of_clients[pos]].is_alive():
             sock.send(bytes(prefix, "utf8")+msg)
         else:
