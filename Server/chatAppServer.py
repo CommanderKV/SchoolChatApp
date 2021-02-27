@@ -26,7 +26,10 @@ def accept_incoming_connections():
     global clients, addresses
 
     while True:
-        client, client_address = SERVER.accept()
+        try:
+            client, client_address = SERVER.accept()
+        except KeyboardInterrupt:
+            quit()
 
         # display who connected at what ip and port
         print(f"{client_address[0]}:{client_address[1]} has connected.")
