@@ -351,12 +351,10 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     """Handles a single client connection."""
     global clients, usernames, clients_HeartBeats, checkpulsexit
 
-    checkpulsexit = False
-    clients_HeartBeats[username][0] = False
-
     # add the user to the clients list
     clients[client] = username
     usernames[hostname] = username
+    checkpulsexit = False
 
     # Check to see if Thread is alive
     def checkForPulse():
@@ -394,7 +392,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
         daemon=True
     )
 
-    clients_HeartBeats[username] = [clients_HeartBeats[username][0], heartBeat_Thread]
+    clients_HeartBeats[username] = [False, heartBeat_Thread]
     clients_HeartBeats[username][1].start()
     delExit = False
 
