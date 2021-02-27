@@ -77,13 +77,11 @@ def openScreenShareMenu(event=None):
 
 
 def openNewWindow(): 
-
+    global newWindow
     def setHostPort(host, port, newWindow):
-        global HOST, PORT
-        HOST = host
-        PORT = port
-        newWindow.destroy()
-        top.focus_force()
+        host = host.get()
+        port = int(port.get())
+        startClient(host, port)
       
     # Toplevel object which will  
     # be treated as a new window 
@@ -109,6 +107,44 @@ def openNewWindow():
     setTheHostAndPort = partial(setHostPort, host, port, newWindow)
 
     login = tkinter.Button(newWindow, text="Login", command=setTheHostAndPort).grid(row=2, column=0)
+
+
+def startClient(host, port):
+    global HOST, PORT, BUFSIZ, ADDR, STOP_HEARTBEAT, client_socket
+
+    HOST = host
+    PORT = port
+    chars = [n for n in "',<>;:[]{}()-_+=`~!@#$%^&*\\|"+'"'+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+
+    if not PORT:
+        PORT = 5050
+    else:
+        PORT = int(PORT)
+
+    HOST = [HOST.replace(n, "") for n in chars][-1]
+
+    BUFSIZ = 1024
+    ADDR = (HOST, PORT)
+
+    try:
+        client_socket = socket(AF_INET, SOCK_STREAM)
+        client_socket.settimeout(2.0)
+        client_socket.connect(ADDR)
+        client_socket.settimeout(10)
+
+        receive_thread = Thread(target=receive, daemon=True)
+        receive_thread.start()
+
+        STOP_HEARTBEAT = False
+
+        heartBeat_Thread = Thread(target=HeartBeat.main, args=(ADDR, lambda: STOP_HEARTBEAT,), daemon=True)
+        heartBeat_Thread.start()
+    except:
+        print("Invaild input")
+        return
+    
+    newWindow.destroy()
+    top.focus_force()
 
 
 top = tkinter.Tk()
@@ -157,33 +193,8 @@ send_button.pack(side=tkinter.RIGHT, padx=20, pady=20)
 
 top.protocol("WM_DELETE_WINDOW", on_closing)
 
-chars = [n for n in "',<>;:[]{}()-_+=`~!@#$%^&*\\|"+'"'+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-
-#----Now comes the sockets part----
-# HOST = input('Enter host: ')
-# PORT = input('Enter port: ')
 openNewWindow()
-if not PORT:
-    PORT = 5050
-else:
-    PORT = int(PORT)
+newWindow.attributes("-topmost", True)
+top.attributes("-topmost", False)
+tkinter.mainloop()  # Starts GUI execution.
 
-HOST = [HOST.replace(n, "") for n in chars][-1]
-
-BUFSIZ = 1024
-ADDR = (HOST, PORT)
-
-client_socket = socket(AF_INET, SOCK_STREAM)
-client_socket.settimeout(2.0)
-client_socket.connect(ADDR)
-client_socket.settimeout(10)
-
-receive_thread = Thread(target=receive, daemon=True)
-receive_thread.start()
-
-STOP_HEARTBEAT = False
-
-heartBeat_Thread = Thread(target=HeartBeat.main, args=(ADDR, lambda: STOP_HEARTBEAT,), daemon=True)
-heartBeat_Thread.start()
-
-#tkinter.mainloop()  # Starts GUI execution.
