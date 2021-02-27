@@ -351,35 +351,37 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     """Handles a single client connection."""
     global clients, usernames, clients_HeartBeats, checkpulsexit
 
+    # Check to see if Thread is alive
+    def checkForPulse():
+        global checkpulsexit
+
+        if clients_HeartBeats[username][1].is_alive():
+            return True
+        else:
+            checkpulsexit = True
+            return False
+
+    # Change clients_HeartBeats[username][0] from the Thread
+    def changeExit(value=None, username=usernames[hostname]):
+        global clients_HeartBeats
+
+        if value != None:
+            clients_HeartBeats[username][0] = True
+            return clients_HeartBeats[username][0]
+        else:
+            return clients_HeartBeats[username][0]
+
     # tell everyone that the user joined the chat
     msg = f"{username} has joined the chat!"
     print(f"Amount of pepole conected: {len(clients)+1}")
     broadcast(bytes(msg, "utf8"))
 
     checkpulsexit = False
-    STOP_HEARTBEAT = False
+    clients_HeartBeats[username][0] = False
 
     # add the user to the clients list
     clients[client] = username
     usernames[hostname] = username
-
-    # Check to see if Thread is alive
-    def checkForPulse():
-        global checkpulsexit
-
-        if clients_HeartBeats[username].is_alive():
-            return True
-        else:
-            checkpulsexit = True
-            return False
-
-    # Change STOP_HEARTBEAT from the Thread
-    def changeExit(value=None):
-        if value != None:
-            STOP_HEARTBEAT = True
-            return STOP_HEARTBEAT
-        else:
-            return STOP_HEARTBEAT
 
     heartBeat_Thread = Thread(
         name="HeartBeat-Thread",
@@ -392,10 +394,22 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
         daemon=True
     )
 
-    clients_HeartBeats[username] = heartBeat_Thread
-    clients_HeartBeats[username].start()
+    clients_HeartBeats[username] = [clients_HeartBeats[username][0], heartBeat_Thread]
+    clients_HeartBeats[username][1].start()
+    delExit = False
 
     while True and checkForPulse():
+
+        try:
+            _ = clients[client]
+        except:
+            delExit = True
+            del usernames[hostname]
+            del clients_HeartBeats[username][1]
+            clients_HeartBeats[username][0] = True
+            client.close()
+            break
+
         # recive a message  
         try:
             msg = client.recv(BUFSIZ)
@@ -415,8 +429,8 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     # print("EXIT at line 394")
                     del clients[client]
                     del usernames[hostname]
-                    del clients_HeartBeats[username]
-                    STOP_HEARTBEAT = True
+                    del clients_HeartBeats[username][1]
+                    clients_HeartBeats[username][0] = True
                     client.close()
                     break
             
@@ -431,8 +445,8 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     # print("EXIT at line 410")
                     del clients[client]
                     del usernames[hostname]
-                    del clients_HeartBeats[username]
-                    STOP_HEARTBEAT = True
+                    del clients_HeartBeats[username][1]
+                    clients_HeartBeats[username][0] = True
                     client.close()
                     break
                 
@@ -446,8 +460,8 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     # print("EXIT at line 425")
                     del clients[client]
                     del usernames[hostname]
-                    del clients_HeartBeats[username]
-                    STOP_HEARTBEAT = True
+                    del clients_HeartBeats[username][1]
+                    clients_HeartBeats[username][0] = True
                     client.close()
 
                     # tell everyone that they have left
@@ -460,14 +474,20 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
         # print("EXIT in if at line 439")
         del clients[client]
         del usernames[hostname]
+        del clients_HeartBeats[username][1]
+        clients_HeartBeats[username][0] = True
         del clients_HeartBeats[username]
         client.close()
+
+    elif delExit == True:
+        del clients_HeartBeats[username]
 
     print(f"Amount of pepole conected: {len(clients)}")
 
 
 def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     """Broadcasts a message to all the clients."""
+    global clients
 
     usernames_of_clients = [usernames[n] for n in usernames]
 
@@ -480,7 +500,7 @@ def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     delsocks = []
     for pos, sock in enumerate(clients):
         # print(f"Clients username: '{usernames_of_clients[pos]}'")
-        if clients_HeartBeats[usernames_of_clients[pos]].is_alive():
+        if clients_HeartBeats[usernames_of_clients[pos]][1].is_alive():
             sock.send(bytes(prefix, "utf8")+msg)
             # print(f"Sending: '{prefix+(msg.decode())}'")
         else:
