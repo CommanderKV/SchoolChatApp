@@ -206,6 +206,7 @@ def handle_sending_screenshare(client, hostname):
     global clients
     global sending_screenshares
     hostname -= 1
+    hostname = str(hostname)
 
     try:
         run = True
@@ -365,6 +366,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     """Handles a single client connection."""
     global clients, usernames, clients_HeartBeats, checkpulsexit, hostnames
 
+    hostname = str(hostname)
     hostnames.append(hostname)
 
     # add the user to the clients list
