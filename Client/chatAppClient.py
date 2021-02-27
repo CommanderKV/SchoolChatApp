@@ -39,12 +39,38 @@ def send(event=None):  # event is passed by binders.
     msg = my_msg.get()
     my_msg.set("")  # Clears input field.
 
-    # send the message to the server
-    client_socket.send(bytes(msg, "utf8"))
-    # if message is to quit then quit
-    if msg == "{quit}":
-        client_socket.close()
-        top.quit()
+    # try seending the msg if it fails try again 10 times
+    pings = 0
+    try:
+        # send the message to the server
+        client_socket.send(bytes(msg, "utf8"))
+        # if message is to quit then quit
+        if msg == "{quit}":
+            client_socket.close()
+            top.quit()
+    except:
+        pings = 1
+        sent = False
+        print(f"[PING-ERROR] Sent '{pings}/10' pings with no response")
+
+        while sent == False and pings != 10:
+
+            try:
+                # send the message to the server
+                client_socket.send(bytes(msg, "utf8"))
+                # if message is to quit then quit
+                if msg == "{quit}":
+                    client_socket.close()
+                    top.quit()
+                sent = True
+
+            except:
+                pings += 1
+                print(f"[PING-ERROR] Sent '{pings}/10' pings with no response")
+    
+    if pings == 10:
+        print(f"[NOTICE] Server did not respond within '{pings}' pings")
+        print(f"[NOTICE] Closing chat application")
 
 
 def on_closing(event=None):
@@ -154,6 +180,7 @@ def startClient(host, port):
         )
         
         heartBeat_Thread.start()
+
     except Exception as e:
         if e != TimeoutError:
             print(f"[ERROR] Host: '{host}' or Port: '{port}' is invaild!")
@@ -165,6 +192,7 @@ def startClient(host, port):
     
     newWindow.destroy()
     top.focus_force()
+
 
 def heartBeatStopTF(value=None, setHeartBeat=False):
     global STOP_HEARTBEAT
