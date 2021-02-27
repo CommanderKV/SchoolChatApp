@@ -13,6 +13,7 @@ sending_screenshares = {}
 screenshares = {}
 usernames = {}
 addresses = {}
+hostnames = []
 nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
 
 HOST = "0.0.0.0"
@@ -106,7 +107,8 @@ def accept_incoming_connections():
                 name=name,
                 target=handle_client, 
                 args=(
-                    client, username, 
+                    client, 
+                    username, 
                     client_address[0], 
                     client_address,
                 ), 
@@ -349,7 +351,19 @@ def handle_reciveing_screenshare(client):
 
 def handle_client(client, username, hostname, client_addr):  # Takes client socket as argument.
     """Handles a single client connection."""
-    global clients, usernames, clients_HeartBeats, checkpulsexit
+    global clients, usernames, clients_HeartBeats, checkpulsexit, hostnames
+
+    hostname = hostname.replace(".", "")
+    total = 0
+    for number in hostname:
+        total += int(number)
+        
+    hostname = total
+
+    while hostname in hostnames:
+        hostname += 1
+
+    hostnames.append(hostname)
 
     # add the user to the clients list
     clients[client] = username
@@ -479,13 +493,14 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
 
     elif delExit == True:
         del clients_HeartBeats[username]
-
+    
+    del hostnames[hostname]
     print(f"Amount of pepole conected: {len(clients)}")
 
 
 def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     """Broadcasts a message to all the clients."""
-    global clients
+    global clients, usernames
 
     usernames_of_clients = [usernames[n] for n in usernames]
 
@@ -498,11 +513,11 @@ def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     delsocks = []
     for pos, sock in enumerate(clients):
         # print(f"Clients username: '{usernames_of_clients[pos]}'")
-        print(f"Pos: '{pos}'")
-        print(f"Len of clients heartbeats: '{len(clients_HeartBeats)}'")
-        print(f"Len of usernames_of_clients: '{len(usernames_of_clients)}'")
-        print(f"Len of usernames_of_clients[pos]: '{len(usernames_of_clients[pos])}'")
-        print(f"Len of '{len(clients_HeartBeats[usernames_of_clients[pos]])}'")
+        # print(f"Pos: '{pos}'")
+        # print(f"Len of clients heartbeats: '{len(clients_HeartBeats)}'")
+        # print(f"Len of usernames_of_clients: '{len(usernames_of_clients)}'")
+        # print(f"Len of usernames_of_clients[pos]: '{len(usernames_of_clients[pos])}'")
+        # print(f"Len of '{len(clients_HeartBeats[usernames_of_clients[pos]])}'")
         if clients_HeartBeats[usernames_of_clients[pos]][1].is_alive():
             sock.send(bytes(prefix, "utf8")+msg)
             # print(f"Sending: '{prefix+(msg.decode())}'")
