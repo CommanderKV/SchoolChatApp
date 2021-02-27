@@ -66,8 +66,31 @@ def accept_incoming_connections():
                         username = str(username)+"0"
 
             # send welcome message
-            welcome = f"[MSG] Welcome {username}! If you ever want to quit, type '"+"{quit}"+"' to exit."
-            client.send(bytes(welcome, "utf8"))
+            pings = 0
+            try:
+                welcome = f"[MSG] Welcome {username}! If you ever want to quit, type '"+"{quit}"+"' to exit."
+                client.send(bytes(welcome, "utf8"))
+
+            except:
+                pings += 1
+                sent = False
+                print(f"[PING] Sent '{pings}/10' pings to: '{client_address[0]}:{client_address[1]}' with no response")
+                
+                while sent == False and pings != 10:
+                    try:
+                        welcome = f"[MSG] Welcome {username}! If you ever want to quit, type '"+"{quit}"+"' to exit."
+                        client.send(bytes(welcome, "utf8"))
+                        sent = True
+
+                    except:
+                        pings += 1
+                        print(f"[PING] Sent '{pings}/10' pings to: '{client_address[0]}:{client_address[1]}' with no response")
+                
+                if pings == 10:
+                    print(f"[CONNECTION-ERROR] Sent '{pings}/10' pings to: '{client_address[0]}:{client_address[1]}' with no success")
+                    print(f"[CONNECTION-ERROR] Abandoning attepmt to connect to: '{client_address[0]}:{client_address[1]}'")
+                    continue
+
 
             # add this user to a dictonary
             addresses[client] = client_address
