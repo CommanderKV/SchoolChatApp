@@ -380,7 +380,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
         # recive a message  
         try:
             msg = client.recv(BUFSIZ)
-            print(f"'{msg.decode()}' recived from: '{client_addr[0]}:{client_addr[1]}'")
+            # print(f"'{msg.decode()}' recived from: '{client_addr[0]}:{client_addr[1]}'")
         except:
             msg = None
 
@@ -393,7 +393,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     else:
                         raise Exception
                 except:
-                    print("EXIT at line 394")
+                    # print("EXIT at line 394")
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username]
@@ -409,7 +409,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     msg = bytes("{quit}", "utf-8")
                     broadcast(msg, msgTF=False)
                 except:
-                    print("EXIT at line 410")
+                    # print("EXIT at line 410")
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username]
@@ -424,7 +424,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     # close the client conection
                     client.send(bytes("[MSG] {quit}", "utf8"))
                 finally:
-                    print("EXIT at line 425")
+                    # print("EXIT at line 425")
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username]
@@ -438,7 +438,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     break
     
     if checkpulsexit == True:
-        print("EXIT in if at line 439")
+        # print("EXIT in if at line 439")
         del clients[client]
         del usernames[hostname]
         del clients_HeartBeats[username]
@@ -460,10 +460,10 @@ def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     # sends a message to all users
     delsocks = []
     for pos, sock in enumerate(clients):
-        print(f"Clients username: '{usernames_of_clients[pos]}'")
+        # print(f"Clients username: '{usernames_of_clients[pos]}'")
         if clients_HeartBeats[usernames_of_clients[pos]].is_alive():
             sock.send(bytes(prefix, "utf8")+msg)
-            print(f"Sending: '{prefix+(msg.decode())}'")
+            # print(f"Sending: '{prefix+(msg.decode())}'")
         else:
             print(f"Username: '{usernames_of_clients[pos]}' is being delted")
             delsocks.append(clients[sock])

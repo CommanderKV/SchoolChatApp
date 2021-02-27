@@ -13,18 +13,19 @@ import sys
 def receive():
     """Handles receiving of messages."""
     global STOP_HEARTBEAT, client_socket
-    
-    client_socket.settimeout(2.0)
 
     # attempts to recive a message
     while True and STOP_HEARTBEAT == False:
         try:
             try:
-                msg = client_socket.recv(BUFSIZ).decode("utf8")
-            except TimeoutError:
-                print("MSG recv timedout")
+                client_socket.settimeout(1.0)
+                msg = client_socket.recv(BUFSIZ)
+                msg = msg.decode("utf8")
+            except:
+                # print("MSG recv timedout")
+                continue
 
-            print(f"'{msg}' recived")
+            #print(f"'{msg}' recived")
             if "[MSG] " in msg:
                 
                 msg = msg.replace("[MSG] ", "")
@@ -52,7 +53,7 @@ def send(event=None):  # event is passed by binders.
     try:
         # send the message to the server
         client_socket.send(bytes(msg, "utf8"))
-        print(f"'{msg}' Sent")
+        #print(f"'{msg}' Sent")
         # if message is to quit then quit
         if msg == "{quit}":
             client_socket.close()
