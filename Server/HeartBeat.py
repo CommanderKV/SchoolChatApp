@@ -56,7 +56,7 @@ def hi(client, addr, pings):
         if msg != "Hey!":
             raise TimeoutError
 
-    except TimeoutError:
+    except:
         print(f"[NOTICE] Ping from: '{addr[0]}:{addr[1]}' failed. Attempt '{pings}/10'")
         return False
     
@@ -67,7 +67,7 @@ def hey(client, addr, pings):
     try:
         client.sendall(bytes("Hey!", "utf-8"))
 
-    except TimeoutError:
+    except:
         print(f"[NOTICE] Ping to: '{addr[0]}:{addr[1]}' failed. Attempt '{pings}/10'")
         return False
     
