@@ -116,7 +116,7 @@ def openNewWindow():
     global newWindow
     def setHostPort(host, port, newWindow):
         host = host.get()
-        port = int(port.get())
+        port = port.get()
         startClient(host, port)
       
     # Toplevel object which will  
@@ -156,7 +156,7 @@ def startClient(host, port):
         if not PORT:
             PORT = 5050
         else:
-            PORT = int(PORT)
+            PORT = int([PORT.replace(n, "") for n in chars][-1])
 
         HOST = [HOST.replace(n, "") for n in chars][-1]
 

@@ -27,9 +27,14 @@ def accept_incoming_connections():
 
     while True:
         try:
+            SERVER.settimeout(1.0)
             client, client_address = SERVER.accept()
+            
         except KeyboardInterrupt:
             quit()
+
+        except TimeoutError:
+            continue
 
         # display who connected at what ip and port
         print(f"{client_address[0]}:{client_address[1]} has connected.")
