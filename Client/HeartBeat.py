@@ -57,6 +57,7 @@ def main(addr, stop):
 def hi(client, addr, pings):
     try:
         msg = client.recv(1024).decode("utf-8")
+        print(f"HEARTBEAT RECV: '{msg}'")
         if msg != "Hey!":
             raise TimeoutError
 
