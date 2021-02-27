@@ -73,7 +73,17 @@ def accept_incoming_connections():
             addresses[client] = client_address
 
             # start a individual thread for this client
-            Thread(target=handle_client, args=(client, username, client_address[0], client_address,), daemon=True).start()
+            name = f"'{client_address[0]}:{client_address[1]}'-Client-Thread"
+            Thread(
+                name=name,
+                target=handle_client, 
+                args=(
+                    client, username, 
+                    client_address[0], 
+                    client_address,
+                ), 
+                daemon=True
+            ).start()
         
         # if the account is a screenshare account
         elif username == reciveing_screenshare:
@@ -82,7 +92,15 @@ def accept_incoming_connections():
             reciveing_screenshares[client] = client_address
 
             # start a thread to handle reciving screenshare accounts
-            Thread(target=handle_reciveing_screenshare, args=(client,), daemon=True).start()
+            name = f"'{client_address[0]}:{client_address[1]}'-RecvScreenShare-Thread"
+            Thread(
+                name=name,
+                target=handle_reciveing_screenshare, 
+                args=(
+                    client,
+                ), 
+                daemon=True
+            ).start()
 
         # if the account is a sending screenshare account
         elif username == sending_screenshare:
@@ -91,7 +109,16 @@ def accept_incoming_connections():
             sending_screenshares[client] = client_address
 
             # start a thread to handle sending screenshare accounts
-            Thread(target=handle_sending_screenshare, args=(client, client_address[0],), daemon=True).start()
+            name = f"'{client_address[0]}:{client_address[1]}'-SendScreenShare-Thread"
+            Thread(
+                name=name,
+                target=handle_sending_screenshare, 
+                args=(
+                    client, 
+                    client_address[0],
+                ), 
+                daemon=True
+            ).start()
         
         # if the account is requesting the amount of screens give it to them
         elif username == amount_screenshare:
@@ -318,6 +345,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     usernames[hostname] = username
 
     heartBeat_Thread = Thread(
+        name="HeartBeat-Thread",
         target=HeartBeat.main, 
         args=(client_addr[0], ADDR[1], lambda: STOP_HEARTBEAT,), 
         daemon=True)

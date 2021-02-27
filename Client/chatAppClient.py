@@ -132,12 +132,12 @@ def startClient(host, port):
         client_socket.connect(ADDR)
         client_socket.settimeout(10)
 
-        receive_thread = Thread(target=receive, daemon=True)
+        receive_thread = Thread(name="Receiving-Thread", target=receive, daemon=True)
         receive_thread.start()
 
         STOP_HEARTBEAT = False
 
-        heartBeat_Thread = Thread(target=HeartBeat.main, args=(ADDR, lambda: STOP_HEARTBEAT,), daemon=True)
+        heartBeat_Thread = Thread(name="HeartBeat-Thread", target=HeartBeat.main, args=(ADDR, lambda: STOP_HEARTBEAT,), daemon=True)
         heartBeat_Thread.start()
     except:
         print("Invaild input")
