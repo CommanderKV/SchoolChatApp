@@ -205,7 +205,6 @@ def handle_sending_screenshare(client, hostname):
     global screenshares
     global clients
     global sending_screenshares
-    hostname -= 1
     hostname = str(hostname)
 
     try:
@@ -500,7 +499,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     elif delExit == True:
         del clients_HeartBeats[username]
     
-    del hostnames[hostname]
+    hostnames.pop(hostname)
     print(f"Amount of pepole conected: {len(clients)}")
 
 
