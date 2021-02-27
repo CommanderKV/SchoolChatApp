@@ -392,6 +392,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     else:
                         raise Exception
                 except:
+                    print("EXIT at line 394")
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username]
@@ -407,6 +408,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     msg = bytes("{quit}", "utf-8")
                     broadcast(msg, msgTF=False)
                 except:
+                    print("EXIT at line 410")
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username]
@@ -421,6 +423,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     # close the client conection
                     client.send(bytes("[MSG] {quit}", "utf8"))
                 finally:
+                    print("EXIT at line 425")
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username]
@@ -434,6 +437,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     break
     
     if checkpulsexit == True:
+        print("EXIT in if at line 439")
         del clients[client]
         del usernames[hostname]
         del clients_HeartBeats[username]
