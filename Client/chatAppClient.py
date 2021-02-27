@@ -12,6 +12,7 @@ import sys
 
 def receive():
     """Handles receiving of messages."""
+    global STOP_HEARTBEAT
     
     # attempts to recive a message
     while True and STOP_HEARTBEAT == False:
@@ -167,8 +168,6 @@ def startClient(host, port):
         
         receive_thread.start()
 
-        STOP_HEARTBEAT = False
-
         heartBeat_Thread = Thread(
             name="HeartBeat-Thread", 
             target=HeartBeat.main, 
@@ -203,7 +202,7 @@ def heartBeatStopTF(value=None, setHeartBeat=False):
     else:
         return STOP_HEARTBEAT
 
-
+STOP_HEARTBEAT = False
 top = tkinter.Tk()
 top.title("School Chat")
 
