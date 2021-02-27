@@ -499,7 +499,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     elif delExit == True:
         del clients_HeartBeats[username]
     
-    hostnames.pop(hostname)
+    hostnames.pop(hostnames.index(hostname))
     print(f"Amount of pepole conected: {len(clients)}")
 
 
