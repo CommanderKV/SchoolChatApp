@@ -7,6 +7,7 @@ def main(addr, stop):
 
     HeartBeat = socket()
     HeartBeat.bind(addr)
+    print(f"[HEARTBEAT] HeartBeat binded to: '{addr[0]}:{addr[1]}'")
 
     HeartBeat.listen(1)
 

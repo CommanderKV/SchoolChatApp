@@ -7,6 +7,8 @@ def main(addr, stop):
     addr = (addr[0], addr[1]+1)
 
     client = socket()
+
+    print(f"[HEARTBEAT] HeartBeat attempting connection to: '{addr[0]}:{addr[1]}'")
     client.settimeout(None)
     client.connect(addr)
 
