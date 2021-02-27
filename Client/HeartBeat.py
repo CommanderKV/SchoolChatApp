@@ -47,6 +47,7 @@ def main(addr, stop):
     if pings == 10:
         print(f"[NOTICE] Sent {pings} pings to '{addr[0]}:{addr[1]}' and recived to response")
         print(f"[NOTICE] Closing connection to: '{addr[0]}:{addr[1]}'")
+        stop(True, True)
 
     else:
         print(f"[NOTICE] Closing connection to: '{addr[0]}:{addr[1]}'")
@@ -60,7 +61,7 @@ def hi(client, addr, pings):
             raise TimeoutError
 
     except:
-        print(f"[NOTICE] Ping from: '{addr[0]}:{addr[1]}' failed. Attempt '{pings}/10'")
+        print(f"[NOTICE] Ping from: '{addr[0]}:{addr[1]}' failed. Attempt '{pings+1}/10'")
         return False
     
     return True
@@ -71,7 +72,7 @@ def hey(client, addr, pings):
         client.sendall(bytes("Hey!", "utf-8"))
 
     except:
-        print(f"[NOTICE] Ping to: '{addr[0]}:{addr[1]}' failed. Attempt '{pings}/10'")
+        print(f"[NOTICE] Ping to: '{addr[0]}:{addr[1]}' failed. Attempt '{pings+1}/10'")
         return False
     
     return True

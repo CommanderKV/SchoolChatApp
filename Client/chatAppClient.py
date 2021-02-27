@@ -14,7 +14,7 @@ def receive():
     """Handles receiving of messages."""
     
     # attempts to recive a message
-    while True:
+    while True and STOP_HEARTBEAT == False:
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8")
             if "[MSG] " in msg:
@@ -94,19 +94,19 @@ def openNewWindow():
     # sets the geometry of toplevel 
     newWindow.geometry("205x67") 
     
-    #username label and text entry box
-    hostLabel = tkinter.Label(newWindow, text="Host").grid(row=0, column=0)
+    # host label and text entry box
+    tkinter.Label(newWindow, text="Host").grid(row=0, column=0)
     host = tkinter.StringVar()
-    hostEntry = tkinter.Entry(newWindow, textvariable=host).grid(row=0, column=1)
+    tkinter.Entry(newWindow, textvariable=host).grid(row=0, column=1)
 
-    #password label and password entry box
-    portLabel = tkinter.Label(newWindow,text="Port").grid(row=1, column=0)
+    # port label and port entry box
+    tkinter.Label(newWindow,text="Port").grid(row=1, column=0)
     port = tkinter.StringVar()
-    portEntry = tkinter.Entry(newWindow, textvariable=port).grid(row=1, column=1)
+    tkinter.Entry(newWindow, textvariable=port).grid(row=1, column=1)
 
     setTheHostAndPort = partial(setHostPort, host, port, newWindow)
 
-    login = tkinter.Button(newWindow, text="Login", command=setTheHostAndPort).grid(row=2, column=0)
+    tkinter.Button(newWindow, text="Login", command=setTheHostAndPort).grid(row=2, column=0)
 
 
 def startClient(host, port):
@@ -148,7 +148,7 @@ def startClient(host, port):
             target=HeartBeat.main, 
             args=(
                 ADDR, 
-                lambda: STOP_HEARTBEAT,
+                lambda setHeartBeat=False, value=None: heartBeatStopTF(value, setHeartBeat),
             ), 
             daemon=True
         )
@@ -165,6 +165,15 @@ def startClient(host, port):
     
     newWindow.destroy()
     top.focus_force()
+
+def heartBeatStopTF(value=None, setHeartBeat=False):
+    global STOP_HEARTBEAT
+    if setHeartBeat:
+        STOP_HEARTBEAT = value
+        return STOP_HEARTBEAT
+
+    else:
+        return STOP_HEARTBEAT
 
 
 top = tkinter.Tk()
