@@ -356,6 +356,21 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     usernames[hostname] = username
     checkpulsexit = False
 
+    heartBeat_Thread = Thread(
+        name="HeartBeat-Thread",
+        target=HeartBeat.main, 
+        args=(
+            client_addr[0], 
+            ADDR[1]+(len(clients)-1), 
+            lambda e=None: changeExit(e),
+        ), 
+        daemon=True
+    )
+
+    clients_HeartBeats[username] = [False, heartBeat_Thread]
+    clients_HeartBeats[username][1].start()
+    delExit = False
+
     # Check to see if Thread is alive
     def checkForPulse():
         global checkpulsexit
@@ -380,21 +395,6 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     msg = f"{username} has joined the chat!"
     print(f"Amount of pepole conected: {len(clients)+1}")
     broadcast(bytes(msg, "utf8"))
-
-    heartBeat_Thread = Thread(
-        name="HeartBeat-Thread",
-        target=HeartBeat.main, 
-        args=(
-            client_addr[0], 
-            ADDR[1]+(len(clients)-1), 
-            lambda e=None: changeExit(e),
-        ), 
-        daemon=True
-    )
-
-    clients_HeartBeats[username] = [False, heartBeat_Thread]
-    clients_HeartBeats[username][1].start()
-    delExit = False
 
     while True and checkForPulse():
 
