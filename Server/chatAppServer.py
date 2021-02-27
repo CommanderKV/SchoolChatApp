@@ -53,7 +53,7 @@ def accept_incoming_connections():
             client.close()
             continue
 
-        print(username)
+        print(f"Username used to login: {username}")
         if username not in ScreenShareUsernames:
 
             # add a 1 to the end of the username if the username is already signed in
@@ -379,6 +379,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
         # recive a message  
         try:
             msg = client.recv(BUFSIZ)
+            print(f"'{msg.decode()}' recived from: '{client_addr[0]}:{client_addr[1]}'")
         except:
             msg = None
 

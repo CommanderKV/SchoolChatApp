@@ -18,6 +18,7 @@ def receive():
     while True and STOP_HEARTBEAT == False:
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8")
+            print(f"'{msg}' recived")
             if "[MSG] " in msg:
                 
                 msg = msg.replace("[MSG] ", "")
@@ -45,6 +46,7 @@ def send(event=None):  # event is passed by binders.
     try:
         # send the message to the server
         client_socket.send(bytes(msg, "utf8"))
+        print(f"'{msg}' Sent")
         # if message is to quit then quit
         if msg == "{quit}":
             client_socket.close()

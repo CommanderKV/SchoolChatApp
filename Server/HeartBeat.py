@@ -44,20 +44,21 @@ def main(ip, port, stop):
             break
     
     if pings >= 10:
-        print(f"[NOTICE] Sent {pings} pings to '{addr[0]}:{addr[1]}' and recived to response")
+        print(f"[NOTICE] Sent {pings+1} pings to '{addr[0]}:{addr[1]}' and recived to response")
         print(f"[NOTICE] Closing connection to: '{addr[0]}:{addr[1]}'")
     else:
         print(f"[NOTICE] Closing connection to: '{addr[0]}:{addr[1]}'")
         print(f"[NOTICE] Outside source is terminating HeartBeat to: '{addr[0]}:{addr[1]}'")
 
-def hi(client, addr, pings):
+def hi(client, addr, pings, stop):
     try:
         msg = client.recv(1024).decode("utf-8")
         if msg != "Hey!":
             raise TimeoutError
 
     except:
-        print(f"[NOTICE] Ping from: '{addr[0]}:{addr[1]}' failed. Attempt '{pings}/10'")
+        if stop() == False:
+            print(f"[NOTICE] Ping from: '{addr[0]}:{addr[1]}' failed. Attempt '{pings+1}/10'")
         return False
     
     return True
@@ -68,7 +69,7 @@ def hey(client, addr, pings):
         client.sendall(bytes("Hey!", "utf-8"))
 
     except:
-        print(f"[NOTICE] Ping to: '{addr[0]}:{addr[1]}' failed. Attempt '{pings}/10'")
+        print(f"[NOTICE] Ping to: '{addr[0]}:{addr[1]}' failed. Attempt '{pings+1}/10'")
         return False
     
     return True
