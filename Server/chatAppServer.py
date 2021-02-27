@@ -1,5 +1,6 @@
 """Server for multithreaded (asynchronous) chat application."""
-from socket import AF_INET, socket, SOCK_STREAM, gethostbyname, gethostname
+from socket import AF_INET, socket, SOCK_STREAM, gethostbyname, gethostname, timeout
+import time
 from threading import Thread
 from zlib import decompress
 import HeartBeat
@@ -29,11 +30,7 @@ def accept_incoming_connections():
         try:
             SERVER.settimeout(1.0)
             client, client_address = SERVER.accept()
-            
-        except KeyboardInterrupt:
-            quit()
-
-        except TimeoutError:
+        except timeout:
             continue
 
         # display who connected at what ip and port
