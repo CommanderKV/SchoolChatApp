@@ -3,10 +3,23 @@ from socket import socket, gethostbyname, gethostname
 
 def main(addr, stop):
 
-    addr = (gethostbyname(gethostname()), addr[1]+1)
+    addr = [gethostbyname(gethostname()), addr[1]+1]
 
     HeartBeat = socket()
-    HeartBeat.bind(addr)
+    binded = False
+    try:
+        HeartBeat.bind(tuple(addr))
+        binded = True
+    except:
+        addr[1] += 1
+        while binded == False:
+            try:
+                HeartBeat.bind(tuple(addr))
+                binded = True
+            except:
+                continue
+
+    
     print(f"[HEARTBEAT] HeartBeat binded to: '{addr[0]}:{addr[1]}'")
 
     HeartBeat.listen(1)
