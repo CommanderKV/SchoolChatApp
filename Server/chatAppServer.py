@@ -462,6 +462,7 @@ def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
         if clients_HeartBeats[usernames_of_clients[pos]].is_alive():
             sock.send(bytes(prefix, "utf8")+msg)
         else:
+            print(f"Username: '{usernames_of_clients[pos]}' is being delted")
             delsocks.append(clients[sock])
     
     if len(delsocks) > 0:
