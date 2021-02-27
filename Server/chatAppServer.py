@@ -498,10 +498,11 @@ def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     delsocks = []
     for pos, sock in enumerate(clients):
         # print(f"Clients username: '{usernames_of_clients[pos]}'")
-        print(pos)
-        print(len(clients_HeartBeats))
-        print(len(usernames_of_clients))
-        print(len(clients_HeartBeats[usernames_of_clients[pos]]))
+        print(f"Pos: '{pos}'")
+        print(f"Len of clients heartbeats: '{len(clients_HeartBeats)}'")
+        print(f"Len of usernames_of_clients: '{len(usernames_of_clients)}'")
+        print(f"Len of usernames_of_clients[pos]: '{len(usernames_of_clients[pos])}'")
+        print(f"Len of '{len(clients_HeartBeats[usernames_of_clients[pos]])}'")
         if clients_HeartBeats[usernames_of_clients[pos]][1].is_alive():
             sock.send(bytes(prefix, "utf8")+msg)
             # print(f"Sending: '{prefix+(msg.decode())}'")
