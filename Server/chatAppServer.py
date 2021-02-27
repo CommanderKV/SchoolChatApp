@@ -374,6 +374,8 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     usernames[hostname] = username
     checkpulsexit = False
 
+    print(usernames, hostname)
+
     heartBeat_Thread = Thread(
         name="HeartBeat-Thread",
         target=HeartBeat.main, 
