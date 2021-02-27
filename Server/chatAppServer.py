@@ -363,7 +363,6 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
 
     # Change STOP_HEARTBEAT from the Thread
     def changeExit(value=None):
-        global STOP_HEARTBEAT
         if value != None:
             STOP_HEARTBEAT = True
             return STOP_HEARTBEAT
