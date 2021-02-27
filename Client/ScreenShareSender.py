@@ -22,7 +22,7 @@ def main(host="0.0.0.0", port=80):
 
     # tell the server that im a screenshare account
     sender.sendall(bytes(f"[SCREENSHARE_{ip}_S]", "utf-8"))
-    print(f"Sending: '[SCREENSHARE_{ip}_S]'")
+    # print(f"Sending: '[SCREENSHARE_{ip}_S]'")
 
     # start the main process
     screenshare_picture_taker(sender)
@@ -43,18 +43,18 @@ def send_img(img, sender):
     imsize1 = int(imsize[0]/100)
     size1 = (imsize1.bit_length() + 7) // 8
     sender.sendall(bytes([size1]))
-    print(f"Sending size1: '{size1}'")
+    # print(f"Sending size1: '{size1}'")
 
     sender.sendall(imsize1.to_bytes(size1, byteorder="big"))
-    print(f"Sending imsize1: '{imsize1}'")
+    # print(f"Sending imsize1: '{imsize1}'")
 
     imsize1 = int(imsize[1]/100)
     size1 = (imsize1.bit_length() + 7) // 8
     sender.sendall(bytes([size1]))
-    print(f"Sending size2: '{size1}'")
+    # print(f"Sending size2: '{size1}'")
 
     sender.sendall(imsize1.to_bytes(size1, byteorder="big"))
-    print(f"Sending imsize2: '{imsize1}'")
+    # print(f"Sending imsize2: '{imsize1}'")
 
     # send the size of pixels length
     size = len(pixels) # 418912, 252259
@@ -63,16 +63,16 @@ def send_img(img, sender):
     #print(size_len)
     size_len1 = size_len.to_bytes(((size_len.bit_length()+7)//8), byteorder="big")
     sender.sendall(size_len1)
-    print(f"Sending size_len: '{size_len}'")
+    # print(f"Sending size_len: '{size_len}'")
 
     # send the pixels length
     size_bytes = size.to_bytes(size_len, byteorder="big")
     sender.send(size_bytes)
-    print(f"Sending size_bytes: '{size_bytes}'")
+    # print(f"Sending size_bytes: '{size_bytes}'")
 
     # send the pixels
     sender.sendall(pixels)
-    print(f"Sending pixels: '{str(pixels)[:10]}...'")
+    # print(f"Sending pixels: '{str(pixels)[:10]}...'")
 
 def screenshare_picture_taker(sender):
     import ScreenShareGUI as GUI
@@ -83,7 +83,7 @@ def screenshare_picture_taker(sender):
                 # send a continue signal
                 msg = len("True")
                 sender.sendall(bytes([msg]))
-                print(f"Sending msg: '{msg}'")
+                # print(f"Sending msg: '{msg}'")
 
                 sender.sendall(bytes("True", "utf-8"))
                 print("Sending countinue statment: 'True'")
