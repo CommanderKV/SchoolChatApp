@@ -12,12 +12,18 @@ import sys
 
 def receive():
     """Handles receiving of messages."""
-    global STOP_HEARTBEAT
+    global STOP_HEARTBEAT, client_socket
     
+    client_socket.settimeout(2.0)
+
     # attempts to recive a message
     while True and STOP_HEARTBEAT == False:
         try:
-            msg = client_socket.recv(BUFSIZ).decode("utf8")
+            try:
+                msg = client_socket.recv(BUFSIZ).decode("utf8")
+            except TimeoutError:
+                print("MSG recv timedout")
+
             print(f"'{msg}' recived")
             if "[MSG] " in msg:
                 
