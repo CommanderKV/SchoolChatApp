@@ -11,7 +11,7 @@ def main(addr, stop):
 
     HeartBeat.listen(1)
 
-    client, addr = HeartBeat.accept()
+    client, client_addr = HeartBeat.accept()
 
     msg = 5
     client.sendall(
@@ -21,7 +21,7 @@ def main(addr, stop):
         )
     )
 
-    print(f"[HEARTBEAT] HeartBeat connection established to: '{addr[0]}:{addr[1]}'")
+    print(f"[HEARTBEAT] HeartBeat connection established to: '{client_addr[0]}:{addr[1]}'")
 
 
     client.settimeout(2.0)

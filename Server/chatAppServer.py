@@ -375,6 +375,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     client.close()
                     break
             
+
             # if the message is for the server to shutdown
             elif msg == bytes("{serverquit}", "utf-8") and checkForPulse():
                 print("Kicking everyone from server")
@@ -389,24 +390,24 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     client.close()
                     break
                 
-                
 
             # if the message is quit then
             elif msg == bytes("{quit}", "utf-8") and checkForPulse():
-                # close the client conection
-                client.send(bytes("[MSG] {quit}", "utf8"))
+                try:
+                    # close the client conection
+                    client.send(bytes("[MSG] {quit}", "utf8"))
+                finally:
+                    del clients[client]
+                    del usernames[hostname]
+                    del clients_HeartBeats[username]
+                    STOP_HEARTBEAT = True
+                    client.close()
 
-                del clients[client]
-                del usernames[hostname]
-                del clients_HeartBeats[username]
-                STOP_HEARTBEAT = True
-                client.close()
+                    # tell everyone that they have left
+                    broadcast(bytes(f"{username} has left the chat.", "utf8"))
 
-                # tell everyone that they have left
-                broadcast(bytes(f"{username} has left the chat.", "utf8"))
-
-                # close their client down
-                break
+                    # close their client down
+                    break
     
     if checkpulsexit == True:
         del clients[client]
@@ -420,14 +421,24 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
 def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     """Broadcasts a message to all the clients."""
 
+    usernames_of_clients = [usernames[n] for n in usernames]
+
     # add the send note "[MSG] " to prefix before sending
     # this is used to tell if it is a message or a diffrent data type
     if msgTF == True:
         prefix = "[MSG] " + prefix
 
     # sends a message to all users
-    for sock in clients:
-        sock.send(bytes(prefix, "utf8")+msg)
+    delsocks = []
+    for pos, sock in enumerate(clients):
+        if clients_HeartBeats[usernames_of_clients[pos]].is_alive():
+            sock.send(bytes(prefix, "utf8")+msg)
+        else:
+            delsocks.append(clients[sock])
+    
+    if len(delsocks) > 0:
+        for sock in delsocks:
+            del clients[sock]
 
 SERVER = socket(AF_INET, SOCK_STREAM)
 SERVER.bind(ADDR)

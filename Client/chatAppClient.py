@@ -112,35 +112,55 @@ def openNewWindow():
 def startClient(host, port):
     global HOST, PORT, BUFSIZ, ADDR, STOP_HEARTBEAT, client_socket
 
-    HOST = host
-    PORT = port
-    chars = [n for n in "',<>;:[]{}()-_+=`~!@#$%^&*\\|"+'"'+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-
-    if not PORT:
-        PORT = 5050
-    else:
-        PORT = int(PORT)
-
-    HOST = [HOST.replace(n, "") for n in chars][-1]
-
-    BUFSIZ = 1024
-    ADDR = (HOST, PORT)
-
     try:
-        client_socket = socket(AF_INET, SOCK_STREAM)
-        client_socket.settimeout(2.0)
-        client_socket.connect(ADDR)
-        client_socket.settimeout(10)
+        HOST = host
+        PORT = port
+        chars = [n for n in "',<>;:[]{}()-_+=`~!@#$%^&*\\|"+'"'+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]
 
-        receive_thread = Thread(name="Receiving-Thread", target=receive, daemon=True)
+        if not PORT:
+            PORT = 5050
+        else:
+            PORT = int(PORT)
+
+        HOST = [HOST.replace(n, "") for n in chars][-1]
+
+        BUFSIZ = 1024
+        ADDR = (HOST, PORT)
+
+    
+        client_socket = socket(AF_INET, SOCK_STREAM)
+        client_socket.settimeout(3.0)
+        client_socket.connect(ADDR)
+        client_socket.settimeout(5)
+
+        receive_thread = Thread(
+            name="Receiving-Thread", 
+            target=receive, 
+            daemon=True
+        )
+        
         receive_thread.start()
 
         STOP_HEARTBEAT = False
 
-        heartBeat_Thread = Thread(name="HeartBeat-Thread", target=HeartBeat.main, args=(ADDR, lambda: STOP_HEARTBEAT,), daemon=True)
+        heartBeat_Thread = Thread(
+            name="HeartBeat-Thread", 
+            target=HeartBeat.main, 
+            args=(
+                ADDR, 
+                lambda: STOP_HEARTBEAT,
+            ), 
+            daemon=True
+        )
+        
         heartBeat_Thread.start()
-    except:
-        print("Invaild input")
+    except Exception as e:
+        if e != TimeoutError:
+            print(f"[ERROR] Host: '{host}' or Port: '{port}' is invaild!")
+        
+        elif e == TimeoutError:
+            print(f"[CONNECTION-ERROR] Connection timed out while connecting to: '{ADDR[0]}:{ADDR[1]}'")
+        
         return
     
     newWindow.destroy()
