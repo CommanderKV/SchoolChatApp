@@ -24,7 +24,7 @@ def main(addr, stop):
     print(f"[HEARTBEAT] HeartBeat connection established to: '{client_addr[0]}:{addr[1]}'")
 
 
-    client.settimeout(2.0)
+    client.settimeout(3.5)
 
     pings = 0
 
