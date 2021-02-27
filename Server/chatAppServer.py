@@ -50,6 +50,17 @@ def accept_incoming_connections():
             amount_screenshare
         ]
 
+        # set the hostname for this account
+        hostname = client_address[0].replace(".", "")
+        total = 0
+        for number in hostname:
+            total += int(number)
+            
+        hostname = total
+
+        while hostname in hostnames:
+            hostname += 1
+
         # get the username from the user and send out a welcome message if
         # the user is not a screenshare account
         
@@ -109,7 +120,7 @@ def accept_incoming_connections():
                 args=(
                     client, 
                     username, 
-                    client_address[0], 
+                    hostname, 
                     client_address,
                 ), 
                 daemon=True
@@ -145,7 +156,7 @@ def accept_incoming_connections():
                 target=handle_sending_screenshare, 
                 args=(
                     client, 
-                    client_address[0],
+                    hostname,
                 ), 
                 daemon=True
             ).start()
@@ -194,6 +205,7 @@ def handle_sending_screenshare(client, hostname):
     global screenshares
     global clients
     global sending_screenshares
+    hostname -= 1
 
     try:
         run = True
@@ -352,16 +364,6 @@ def handle_reciveing_screenshare(client):
 def handle_client(client, username, hostname, client_addr):  # Takes client socket as argument.
     """Handles a single client connection."""
     global clients, usernames, clients_HeartBeats, checkpulsexit, hostnames
-
-    hostname = hostname.replace(".", "")
-    total = 0
-    for number in hostname:
-        total += int(number)
-        
-    hostname = total
-
-    while hostname in hostnames:
-        hostname += 1
 
     hostnames.append(hostname)
 
