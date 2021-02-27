@@ -8,7 +8,7 @@ def main(ip, port, stop):
 
     client = socket()
 
-    print(f"[HEARTBEAT] HeartBeat attempting connection to: '{addr[0]}:{addr[1]}'")
+    print(f"[HEARTBEAT] HeartBeat attempting to connect to: '{addr[0]}:{addr[1]}'")
     client.settimeout(None)
     client.connect(addr)
 
@@ -45,9 +45,9 @@ def main(ip, port, stop):
     
     if pings >= 10:
         print(f"[NOTICE] Sent {pings} pings to '{addr[0]}:{addr[1]}' and recived to response")
-        print(f"[NOTICE] Closeing connection to: '{addr[0]}:{addr[1]}'")
+        print(f"[NOTICE] Closing connection to: '{addr[0]}:{addr[1]}'")
     else:
-        print(f"[NOTICE] Closeing connection to: '{addr[0]}:{addr[1]}'")
+        print(f"[NOTICE] Closing connection to: '{addr[0]}:{addr[1]}'")
         print(f"[NOTICE] Outside source is terminating HeartBeat to: '{addr[0]}:{addr[1]}'")
 
 def hi(client, addr, pings):
