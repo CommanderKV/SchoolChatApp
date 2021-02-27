@@ -29,8 +29,8 @@ def main(ip, port, stop):
 
     while pings < 10:
         if stop() == False:
-            if hey(client, addr, pings):
-                if hi(client, addr, pings):
+            if hey(client, addr, pings, stop):
+                if hi(client, addr, pings, stop):
                     if pings > 0:
                         pings = 0
 
@@ -64,12 +64,13 @@ def hi(client, addr, pings, stop):
     return True
 
 
-def hey(client, addr, pings):
+def hey(client, addr, pings, stop):
     try:
         client.sendall(bytes("Hey!", "utf-8"))
 
     except:
-        print(f"[NOTICE] Ping to: '{addr[0]}:{addr[1]}' failed. Attempt '{pings+1}/10'")
+        if stop() == False:
+            print(f"[NOTICE] Ping to: '{addr[0]}:{addr[1]}' failed. Attempt '{pings+1}/10'")
         return False
     
     return True
