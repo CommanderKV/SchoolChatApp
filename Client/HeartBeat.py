@@ -1,14 +1,12 @@
-from socket import socket
-from select import select
+from socket import socket, gethostbyname, gethostname
 
 
 def main(addr, stop):
 
-    addr = (addr[0], addr[1]+1)
+    addr = (gethostbyname(gethostname()), addr[1]+1)
 
     HeartBeat = socket()
     HeartBeat.bind(addr)
-    print(f"Binding HeartBeat to: '{addr[0]}:{addr[1]}'")
 
     HeartBeat.listen(1)
 
@@ -21,6 +19,9 @@ def main(addr, stop):
             byteorder="big"
         )
     )
+
+    print(f"[HEARTBEAT] HeartBeat connection established to: '{addr[0]}:{addr[1]}'")
+
 
     client.settimeout(2.0)
 

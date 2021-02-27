@@ -7,6 +7,7 @@ def main(addr, stop):
     addr = (addr[0], addr[1]+1)
 
     client = socket()
+    client.settimeout(None)
     client.connect(addr)
 
     e = int.from_bytes(
@@ -17,6 +18,8 @@ def main(addr, stop):
     if e != 5:
         client.close()
         return
+    
+    print(f"[HEARTBEAT] HeartBeat connection established to: '{addr[0]}:{addr[1]}'")
 
     client.settimeout(2.0)
 
