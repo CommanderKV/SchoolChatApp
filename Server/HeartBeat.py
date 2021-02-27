@@ -2,9 +2,9 @@ from socket import socket
 from select import select
 
 
-def main(addr, stop):
+def main(ip, port, stop):
 
-    addr = (addr[0], addr[1]+1)
+    addr = (ip, port+1)
 
     client = socket()
 

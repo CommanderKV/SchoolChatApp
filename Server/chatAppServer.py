@@ -319,7 +319,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
 
     heartBeat_Thread = Thread(
         target=HeartBeat.main, 
-        args=(client_addr, lambda: STOP_HEARTBEAT,), 
+        args=(client_addr[0], ADDR[1], lambda: STOP_HEARTBEAT,), 
         daemon=True)
     clients_HeartBeats[username] = heartBeat_Thread
     clients_HeartBeats[username].start()
