@@ -193,7 +193,16 @@ def startScreenShare(addr):
     Sharing_Screen = True
 
     # start a thread with the sending program on it
-    t = Thread(target=sender.main, args=(host, port,), daemon=True)
+    name = f"Sender.main/SendingScreenShare-Thread"
+    t = Thread(
+        name=name,
+        target=sender.main, 
+        args=(
+            host, 
+            port,
+        ), 
+        daemon=True
+    )
     threads["sender.main"] = t
     t.start()
 
@@ -448,7 +457,17 @@ def Main(addr):
         screens.append(ScreenShareControlScreen)
         ScreenShareControlScreen.active = False
 
-        t = Thread(target=updateViewScreensScreens, args=(ViewScreensPadding, host, port,), daemon=True)
+        name = f"UpdateViewScreensScreens-Thread"
+        t = Thread(
+            name=name,
+            target=updateViewScreensScreens, 
+            args=(
+                ViewScreensPadding, 
+                host, 
+                port,
+            ), 
+            daemon=True
+        )
         threads["updateViewScreensScreens"] = t
         t.start()
 
