@@ -44,8 +44,9 @@ def main(ip, port, stop):
             break
     
     if pings >= 10:
-        print(f"[NOTICE] Sent {pings+1} pings to '{addr[0]}:{addr[1]}' and recived to response")
+        print(f"[NOTICE] Sent {pings} pings to '{addr[0]}:{addr[1]}' and recived to response")
         print(f"[NOTICE] Closing connection to: '{addr[0]}:{addr[1]}'")
+        stop(True)
     else:
         print(f"[NOTICE] Closing connection to: '{addr[0]}:{addr[1]}'")
         print(f"[NOTICE] Outside source is terminating HeartBeat to: '{addr[0]}:{addr[1]}'")
