@@ -18,7 +18,7 @@ clientIps = {}
 addresses = {}
 hostnames = []
 nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
-msgs = ["This line should be cut off because it is too long so i should be partaialy on the next line."]
+msgs = []
 
 HOST = "0.0.0.0"
 PORT = 5050

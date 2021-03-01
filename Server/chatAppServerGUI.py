@@ -87,7 +87,7 @@ class TextWindow(pygame.Surface):
         if "\n" in text:
             splitText = text.split("\n")
 
-            split_Max = int(self.get_width()-self.fontSize) # does not cut prorperly!!! <----------------------------------------------------------------------------
+            split_Max = int(self.get_width()-self.fontSize)+int(SIZE[0]/self.fontSize)*47
             split_Mark = int(split_Max/self.fontSize)
             print(len(splitText[0])*self.fontSize, split_Max)
             for pos, t in enumerate(splitText):
