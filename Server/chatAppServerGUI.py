@@ -82,17 +82,17 @@ class TextWindow(pygame.Surface):
         self.fill((48, 48, 48))
         
         if "\t" in text:
-            text = text.replace("\t", " "*20)
+            text = text.replace("\t", " "*10)
 
         if "\n" in text:
             splitText = text.split("\n")
 
-            split_Max = int(self.get_width()-self.fontSize)+740
+            split_Max = int(self.get_width()-self.fontSize) # does not cut prorperly!!! <----------------------------------------------------------------------------
             split_Mark = int(split_Max/self.fontSize)
+            print(len(splitText[0])*self.fontSize, split_Max)
             for pos, t in enumerate(splitText):
                 if len(t)*self.fontSize > split_Max:
-                    e = t[split_Mark]
-                    splitText.insert(pos+1, e + str(t[split_Mark:]))
+                    splitText.insert(pos+1, str(t[split_Mark:]))
                     splitText[pos] = str(t[:split_Mark])+"-"
 
             y = self.YPadding
@@ -144,9 +144,9 @@ def exitGUI():
     run = False
 
 def main(usernamesLink, outputLink):
-    global screens, run
+    global screens, run, SIZE
 
-    SIZE = (700, 750)
+    SIZE = (800, 850)
     PADDINGX = 10
     PADDINGY = 10
     WIN = pygame.display.set_mode(SIZE)

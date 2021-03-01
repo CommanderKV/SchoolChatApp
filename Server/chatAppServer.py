@@ -18,7 +18,7 @@ clientIps = {}
 addresses = {}
 hostnames = []
 nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
-msgs = []
+msgs = ["This line should be cut off because it is too long so i should be partaialy on the next line."]
 
 HOST = "0.0.0.0"
 PORT = 5050
@@ -415,11 +415,14 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     def changeExit(value=None, username=usernames[hostname]):
         global clients_HeartBeats
 
-        if value != None:
-            clients_HeartBeats[username][0] = True
-            return clients_HeartBeats[username][0]
-        else:
-            return clients_HeartBeats[username][0]
+        try:
+            if value != None:
+                clients_HeartBeats[username][0] = True
+                return clients_HeartBeats[username][0]
+            else:
+                return clients_HeartBeats[username][0]
+        except:
+            return True
 
     # tell everyone that the user joined the chat
     msg = f"{username} has joined the chat!"
