@@ -4,6 +4,7 @@ import time
 from threading import Thread
 from zlib import decompress
 import HeartBeat
+import chatAppServerGUI as GUI
 
 
 clients = {}
@@ -12,20 +13,23 @@ reciveing_screenshares = {}
 sending_screenshares = {}
 screenshares = {}
 usernames = {}
+clientStatus = {}
 addresses = {}
 hostnames = []
 nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+msgs = []
 
 HOST = "0.0.0.0"
 PORT = 5050
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
-print(f"Connect to IP: {gethostbyname(gethostname())}, PORT: {PORT}")
+msgs.append(f"Connect to IP: {gethostbyname(gethostname())}, PORT: {PORT}")
 
 def accept_incoming_connections():
     """Sets up handling for incoming clients."""
     global reciveing_screenshares, sending_screenshares, screenshares
     global clients, addresses
+    global msgs
 
     while True:
         try:
@@ -35,7 +39,7 @@ def accept_incoming_connections():
             continue
 
         # display who connected at what ip and port
-        print(f"{client_address[0]}:{client_address[1]} has connected.")
+        msgs.append(f"{client_address[0]}:{client_address[1]} has connected.")
 
         # send welcome message to get username
         client.send(bytes("[MSG] Welcome! Now type your username and press enter!", "utf8"))
@@ -70,7 +74,7 @@ def accept_incoming_connections():
             client.close()
             continue
 
-        print(f"Username used to login: {username}")
+        msgs.append(f"Username used to login: {username}")
         if username not in ScreenShareUsernames:
 
             # add a 1 to the end of the username if the username is already signed in
@@ -91,7 +95,7 @@ def accept_incoming_connections():
             except:
                 pings += 1
                 sent = False
-                print(f"[PING] Sent '{pings}/10' pings to: '{client_address[0]}:{client_address[1]}' with no response")
+                msgs.append(f"[PING] Sent '{pings}/10' pings to: '{client_address[0]}:{client_address[1]}' with no response")
                 
                 while sent == False and pings != 10:
                     try:
@@ -101,11 +105,11 @@ def accept_incoming_connections():
 
                     except:
                         pings += 1
-                        print(f"[PING] Sent '{pings}/10' pings to: '{client_address[0]}:{client_address[1]}' with no response")
+                        msgs.append(f"[PING] Sent '{pings}/10' pings to: '{client_address[0]}:{client_address[1]}' with no response")
                 
                 if pings == 10:
-                    print(f"[CONNECTION-ERROR] Sent '{pings}/10' pings to: '{client_address[0]}:{client_address[1]}' with no success")
-                    print(f"[CONNECTION-ERROR] Abandoning attepmt to connect to: '{client_address[0]}:{client_address[1]}'")
+                    msgs.append(f"[CONNECTION-ERROR] Sent '{pings}/10' pings to: '{client_address[0]}:{client_address[1]}' with no success")
+                    msgs.append(f"[CONNECTION-ERROR] Abandoning attepmt to connect to: '{client_address[0]}:{client_address[1]}'")
                     continue
 
 
@@ -205,6 +209,7 @@ def handle_sending_screenshare(client, hostname):
     global screenshares
     global clients
     global sending_screenshares
+    global msgs
     hostname = str(hostname)
 
     try:
@@ -212,10 +217,10 @@ def handle_sending_screenshare(client, hostname):
         while run:
             # running or not?
             msgSize = int.from_bytes(client.recv(1), byteorder="big")
-            #print(f"msgSize: '{msgSize}'")
+            #msgs.append(f"msgSize: '{msgSize}'")
 
             msg = client.recv(msgSize).decode("utf-8")
-            #print(f"msg: '{msg}'")
+            #msgs.append(f"msg: '{msg}'")
 
             continueTF = True if msg == "True" else False
             if continueTF == False:
@@ -236,17 +241,17 @@ def handle_sending_screenshare(client, hostname):
                 imsize1, 
                 imsize2
             )
-            #print(f"imsize: '{imsize}'")
+            #msgs.append(f"imsize: '{imsize}'")
 
             # get data on the image
             size_len = int.from_bytes(client.recv(1), byteorder="big")
-            #print(f"size_len: '{size_len}'")
+            #msgs.append(f"size_len: '{size_len}'")
 
             size = int.from_bytes(client.recv(size_len), byteorder="big")
-            #print(f"size: '{size}'")
+            #msgs.append(f"size: '{size}'")
 
             pixels = convertPixels(client, size)
-            #print(f"pixels len: '{len(pixels)}'")
+            #msgs.append(f"pixels len: '{len(pixels)}'")
 
             #          Username of their already 
             #              signed in account,    pixels, size,  type
@@ -258,9 +263,9 @@ def handle_sending_screenshare(client, hostname):
 
         for name in screenshares:
             if name == usernames[hostname]:
-                print(f"Selecting this to delete: '{name}'")
+                msgs.append(f"Selecting this to delete: '{name}'")
             else:
-                print(name)
+                msgs.append(name)
 
         del screenshares[usernames[hostname]]
         del sending_screenshares[client]
@@ -271,6 +276,7 @@ def handle_reciveing_screenshare(client):
     #    dict\/      str\/    str?\/ tupple\/  str\/
     # screenshares[username] = [pixels, imsize, "RGB"]
     # client is a socket conection
+    global msgs
 
     # get the size of all or a num
     size = int.from_bytes(client.recv(1), byteorder="big")
@@ -280,14 +286,14 @@ def handle_reciveing_screenshare(client):
     allOrNone = True if msg.decode("utf-8") == "ALL" else int.from_bytes(msg, byteorder="big")
     msg_str = msg.decode("utf-8")
     msg_int = int.from_bytes(msg, byteorder="big")
-    print(f"Recived: '{msg_str} or {msg_int}'")
+    msgs.append(f"Recived: '{msg_str} or {msg_int}'")
 
     run = True
     while run:
         # running or not?
         conn = client.recv(1024).decode("utf-8")
         continueTF = True if conn == "True" else False
-        print(f"Recived: '{conn}'")
+        msgs.append(f"Recived: '{conn}'")
         if continueTF == False:
             run = False
             break
@@ -315,7 +321,7 @@ def handle_reciveing_screenshare(client):
 
             # send the username
             client.sendall(bytes(str(username), "utf-8"))
-            print(f"Sending: '{username}'")
+            msgs.append(f"Sending: '{username}'")
 
             # send the length of pixels length
             pixels_len = len(screenshares[username][0])
@@ -325,7 +331,7 @@ def handle_reciveing_screenshare(client):
                 byteorder="big"
             )
             client.sendall(pixels_length_len)
-            print(f"Sending: '{len(pixels_len)}, {pixels_length_len}'")
+            msgs.append(f"Sending: '{len(pixels_len)}, {pixels_length_len}'")
 
             # send the pixels length
             pixels_len = pixels_len.to_bytes(
@@ -333,11 +339,11 @@ def handle_reciveing_screenshare(client):
                 byteorder="big"
             )
             client.sendall(pixels_len)
-            print(f"Sending: '{len(screenshares[username][0])}, {pixels_len}'")
+            msgs.append(f"Sending: '{len(screenshares[username][0])}, {pixels_len}'")
 
             # send the pixels
             client.sendall(screenshares[username][0])
-            print(f"Sending: '{str(screenshares[username][0])[:10]}...'")
+            msgs.append(f"Sending: '{str(screenshares[username][0])[:10]}...'")
 
             # send the image size
             imsize = screenshares[username][1][0]//100
@@ -346,7 +352,7 @@ def handle_reciveing_screenshare(client):
                     byteorder="big"
                 )
             )
-            print(f"Sending: '{screenshares[username][1][0]}'")
+            msgs.append(f"Sending: '{screenshares[username][1][0]}'")
 
             imsize = screenshares[username][1][1]//100
             client.sendall(imsize.to_bytes(
@@ -354,16 +360,17 @@ def handle_reciveing_screenshare(client):
                     byteorder="big"
                 )
             )
-            print(f"Sending: '{screenshares[username][1][1]}'")
+            msgs.append(f"Sending: '{screenshares[username][1][1]}'")
 
             # send the type of image
             client.sendall(bytes(screenshares[username][2], "utf-8"))
-            print(f"Sending: '{screenshares[username][2]}'")
+            msgs.append(f"Sending: '{screenshares[username][2]}'")
 
 
 def handle_client(client, username, hostname, client_addr):  # Takes client socket as argument.
     """Handles a single client connection."""
     global clients, usernames, clients_HeartBeats, checkpulsexit, hostnames
+    global msgs
 
     hostname = str(hostname)
     hostnames.append(hostname)
@@ -373,7 +380,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     usernames[hostname] = username
     checkpulsexit = False
 
-    print(usernames, hostname)
+    msgs.append(usernames, hostname)
 
     heartBeat_Thread = Thread(
         name="HeartBeat-Thread",
@@ -412,7 +419,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
 
     # tell everyone that the user joined the chat
     msg = f"{username} has joined the chat!"
-    print(f"Amount of pepole conected: {len(clients)}")
+    msgs.append(f"Amount of pepole conected: {len(clients)}")
     broadcast(bytes(msg, "utf8"))
 
     while True and checkForPulse():
@@ -430,7 +437,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
         # recive a message  
         try:
             msg = client.recv(BUFSIZ)
-            # print(f"'{msg.decode()}' recived from: '{client_addr[0]}:{client_addr[1]}'")
+            # msgs.append(f"'{msg.decode()}' recived from: '{client_addr[0]}:{client_addr[1]}'")
         except:
             msg = None
 
@@ -443,7 +450,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     else:
                         raise Exception
                 except:
-                    # print("EXIT at line 394")
+                    # msgs.append("EXIT at line 394")
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username][1]
@@ -454,12 +461,12 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
 
             # if the message is for the server to shutdown
             elif msg == bytes("{serverquit}", "utf-8") and checkForPulse():
-                print("Kicking everyone from server")
+                msgs.append("Kicking everyone from server")
                 try:
                     msg = bytes("{quit}", "utf-8")
                     broadcast(msg, msgTF=False)
                 except:
-                    # print("EXIT at line 410")
+                    # msgs.append("EXIT at line 410")
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username][1]
@@ -474,7 +481,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     # close the client conection
                     client.send(bytes("[MSG] {quit}", "utf8"))
                 finally:
-                    # print("EXIT at line 425")
+                    # msgs.append("EXIT at line 425")
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username][1]
@@ -488,7 +495,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     break
     
     if checkpulsexit == True:
-        # print("EXIT in if at line 439")
+        # msgs.append("EXIT in if at line 439")
         del clients[client]
         del usernames[hostname]
         del clients_HeartBeats[username][1]
@@ -500,12 +507,12 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
         del clients_HeartBeats[username]
     
     hostnames.pop(hostnames.index(hostname))
-    print(f"Amount of pepole conected: {len(clients)}")
+    msgs.append(f"Amount of pepole conected: {len(clients)}")
 
 
 def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     """Broadcasts a message to all the clients."""
-    global clients, usernames
+    global clients, usernames, msgs
 
     usernames_of_clients = [usernames[n] for n in usernames]
 
@@ -517,31 +524,50 @@ def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
     # sends a message to all users
     delsocks = []
     for pos, sock in enumerate(clients):
-        # print(f"Clients username: '{usernames_of_clients[pos]}'")
-        # print(f"Pos: '{pos}'")
-        # print(f"Len of clients heartbeats: '{len(clients_HeartBeats)}'")
-        # print(f"Len of usernames_of_clients: '{len(usernames_of_clients)}'")
-        # print(f"Len of usernames_of_clients[pos]: '{len(usernames_of_clients[pos])}'")
-        # print(f"Len of '{len(clients_HeartBeats[usernames_of_clients[pos]])}'")
+        # msgs.append(f"Clients username: '{usernames_of_clients[pos]}'")
+        # msgs.append(f"Pos: '{pos}'")
+        # msgs.append(f"Len of clients heartbeats: '{len(clients_HeartBeats)}'")
+        # msgs.append(f"Len of usernames_of_clients: '{len(usernames_of_clients)}'")
+        # msgs.append(f"Len of usernames_of_clients[pos]: '{len(usernames_of_clients[pos])}'")
+        # msgs.append(f"Len of '{len(clients_HeartBeats[usernames_of_clients[pos]])}'")
         if clients_HeartBeats[usernames_of_clients[pos]][1].is_alive():
             sock.send(bytes(prefix, "utf8")+msg)
-            # print(f"Sending: '{prefix+(msg.decode())}'")
+            # msgs.append(f"Sending: '{prefix+(msg.decode())}'")
         else:
-            print(f"Username: '{usernames_of_clients[pos]}' is being delted")
+            msgs.append(f"Username: '{usernames_of_clients[pos]}' is being delted")
             delsocks.append(clients[sock])
     
     if len(delsocks) > 0:
         for sock in delsocks:
             del clients[sock]
 
-SERVER = socket(AF_INET, SOCK_STREAM)
-SERVER.bind(ADDR)
+def getMsgs(clear=False):
+    global msgs
+    if clear is True:
+        msgs.clear()
+    else:
+        return msgs
 
-if __name__ == "__main__":
-    SERVER.listen(5)
-    print("Waiting for connection...")
-    ACCEPT_THREAD = Thread(target=accept_incoming_connections, daemon=True)
-    ACCEPT_THREAD.start()
-    ACCEPT_THREAD.join()
-    SERVER.close()
+def getUsernamesAndStatus():
+    global usernames, clientStatus
+    usernamesList = [usernames[hostname] for hostname in usernames]
+    clientStatuss = [clientStatus[username] for username in usernamesList]
+    return usernamesList, clientStatuss
 
+def main():
+    global SERVER
+    global msgs
+    SERVER = socket(AF_INET, SOCK_STREAM)
+    SERVER.bind(ADDR)
+
+    if __name__ == "__main__":
+        SERVER.listen(5)
+        msgs.append("Waiting for connections...")
+        ACCEPT_THREAD = Thread(target=accept_incoming_connections, daemon=True)
+        ACCEPT_THREAD.start()
+    
+    usernamesLink = lambda : getUsernamesAndStatus()
+    outputLink = lambda clear=False : getMsgs(clear)
+    GUI.main(usernamesLink, outputLink)
+
+main()
