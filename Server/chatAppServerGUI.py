@@ -129,8 +129,12 @@ def drawWindow(win):
     
     pygame.display.update()
 
+def exitGUI():
+    global run
+    run = False
+
 def main(usernamesLink, outputLink):
-    global screens
+    global screens, run
 
     SIZE = (700, 750)
     PADDINGX = 10
@@ -152,6 +156,15 @@ def main(usernamesLink, outputLink):
                 "Conected users",
                 switchScreenTo,
                 "conected users"
+            ),
+            Button(
+                (255, 255, 255),
+                PADDINGX,
+                int(SIZE[1]-50-PADDINGY)-PADDINGY,
+                200,
+                50,
+                "Stop server",
+                exitGUI
             )
         ]
 
