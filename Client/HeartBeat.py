@@ -1,5 +1,5 @@
 from socket import socket, gethostbyname, gethostname
-
+import time
 
 def main(addr, stop):
 
@@ -43,7 +43,9 @@ def main(addr, stop):
 
     while pings != 10:
         if stop() == False:
+            time.sleep(0.2)
             if hi(client, addr, pings):
+                time.sleep(0.2)
                 if hey(client, addr, pings):
                     if pings > 0:
                         pings = 0

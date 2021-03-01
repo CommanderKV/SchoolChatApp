@@ -92,7 +92,7 @@ class TextWindow(pygame.Surface):
             for pos, t in enumerate(splitText):
                 if len(t)*self.fontSize > split_Max:
                     e = t[split_Mark]
-                    splitText.insert(pos+1, "-" + e + str(t[split_Mark:]))
+                    splitText.insert(pos+1, e + str(t[split_Mark:]))
                     splitText[pos] = str(t[:split_Mark])+"-"
 
             y = self.YPadding

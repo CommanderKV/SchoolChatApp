@@ -1,5 +1,6 @@
 from socket import socket
 from select import select
+import time
 
 
 def main(ip, port, stop, msgs):
@@ -29,7 +30,9 @@ def main(ip, port, stop, msgs):
 
     while pings < 10:
         if stop() == False:
+            time.sleep(0.2)
             if hey(client, addr, pings, stop, msgs):
+                time.sleep(0.2)
                 if hi(client, addr, pings, stop, msgs):
                     if pings > 0:
                         pings = 0
