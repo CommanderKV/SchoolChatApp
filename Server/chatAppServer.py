@@ -432,6 +432,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
             delExit = True
             del usernames[hostname]
             del clients_HeartBeats[username][1]
+            del clientIps[username]
             clients_HeartBeats[username][0] = True
             client.close()
             break
@@ -456,8 +457,10 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username][1]
+                    del clientIps[username]
                     clients_HeartBeats[username][0] = True
                     client.close()
+                    delExit = True
                     break
             
 
@@ -472,8 +475,10 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username][1]
+                    del clientIps[username]
                     clients_HeartBeats[username][0] = True
                     client.close()
+                    delExit = True
                     break
                 
 
@@ -487,8 +492,10 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                     del clients[client]
                     del usernames[hostname]
                     del clients_HeartBeats[username][1]
+                    del clientIps[username]
                     clients_HeartBeats[username][0] = True
                     client.close()
+                    delExit = True
 
                     # tell everyone that they have left
                     broadcast(bytes(f"{username} has left the chat.", "utf8"))
@@ -501,6 +508,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
         del clients[client]
         del usernames[hostname]
         del clients_HeartBeats[username][1]
+        del clientIps[username]
         clients_HeartBeats[username][0] = True
         del clients_HeartBeats[username]
         client.close()
