@@ -14,6 +14,7 @@ sending_screenshares = {}
 screenshares = {}
 usernames = {}
 clientStatus = {}
+clientIps = {}
 addresses = {}
 hostnames = []
 nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
@@ -370,7 +371,7 @@ def handle_reciveing_screenshare(client):
 def handle_client(client, username, hostname, client_addr):  # Takes client socket as argument.
     """Handles a single client connection."""
     global clients, usernames, clients_HeartBeats, checkpulsexit, hostnames
-    global msgs
+    global msgs, clientIps
 
     hostname = str(hostname)
     hostnames.append(hostname)
@@ -378,6 +379,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     # add the user to the clients list
     clients[client] = username
     usernames[hostname] = username
+    clientIps[username] = str(client_addr[0])
     checkpulsexit = False
 
     msgs.append(usernames, hostname)
@@ -549,10 +551,11 @@ def getMsgs(clear=False):
         return msgs
 
 def getUsernamesAndStatus():
-    global usernames, clientStatus
+    global usernames, clientStatus, clientIps
     usernamesList = [usernames[hostname] for hostname in usernames]
     clientStatuss = [clientStatus[username] for username in usernamesList]
-    return usernamesList, clientStatuss
+    clientips = [clientIps[username] for username in usernamesList]
+    return usernamesList, clientStatuss, clientips
 
 def main():
     global SERVER
