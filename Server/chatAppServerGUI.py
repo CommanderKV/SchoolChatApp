@@ -107,22 +107,6 @@ class TextWindow(pygame.Surface):
             self.blit(text, (0, 0))
 
 
-def openConectedUsersWindow(win):
-    pygame.font.init()
-
-    '''
-    conectedUsersSurface = pygame.Surface(SIZE)
-    font = pygame.font.SysFont("comicsans", 20)
-
-    # get the connected users in a string
-    usernamesStrings = ""
-    for hostname in usernames:
-        usernamesStrings += str(usernames[hostname])+"\n"
-
-    conectedTextBar = font.render(usernamesStrings, 1, (255, 255, 255))
-    conectedUsersSurface.blit(conectedTextBar, (PADDINGX, PADDINGY))
-    '''
-
 def switchScreenTo(screentopic):
     for screen in screens:
         if screen.topic == screentopic.upper():

@@ -46,8 +46,11 @@ class screenshare(pygame.Surface):
         self.y = y
         self.bg = (0, 0, 0)
         self.pos = pos
-        self.font = pygame.font.SysFont("comicsans", 20)
-        if self.thisPc == False:
+        self.img = None
+        self.font = pygame.font.SysFont("comicsans", 40)
+        self.drawingThread = False
+
+        if self.thisPc is False:
             global host, port
 
             # make a socket
@@ -61,32 +64,65 @@ class screenshare(pygame.Surface):
             ip = gethostbyname(gethostname())
             self.reciver.sendall(bytes(f"[SCREENSHARE_{ip}_R]", "utf-8"))
     
+    def generateImg(self, surface, win):
+        global Live
+
+        self.img = surface
+        
+
+    def drawPreview(self, win):
+        def makeSurface(screens, genIMG):
+            import time
+            start = time.time()
+
+            run = True
+            while run:
+                
+                if (time.time()-start) >= 0.5:
+                    start = time.time()
+                    for screen in screens():
+                        if screen.topic == "SCREEN SHARE OPTIONS":
+                            if screen.active is False:
+                                run = False
+            
+                with mss() as sct:
+                    width = self.get_size()[0]
+                    height = self.get_size()[1]
+
+                    rect = sender.RECT
+                    img = sct.grab(rect)
+                    image = Image.frombytes("RGB", img.size, img.bgra, "raw", "BGRX")
+                    image = image.resize((width, height))
+
+                    pixels = image.tobytes("raw", "RGB")
+                    size = (width, height)
+
+                    img = pygame.image.fromstring(pixels, size, "RGB")
+                    genIMG(img)
+        
+        screensAcess = lambda : screens
+        genIm = lambda img=None : self.generateImg(img, win)
+        self.drawingThread = Thread(
+            target=makeSurface, 
+            args=(
+                screensAcess,
+                genIm
+            ), 
+            daemon=True
+        )
+
+        self.drawingThread.start()
+                
+
     def draw(self, win):
-        self.fill(self.bg)
+        global Live
+
+        #self.fill(self.bg)
         if self.thisPc is True:
-            with mss() as sct:
-                width = self.get_size()[0]
-                height = self.get_size()[1]
-
-                rect = sender.RECT
-                img = sct.grab(rect)
-                image = Image.frombytes("RGB", img.size, img.bgra, "raw", "BGRX")
-                image = image.resize((width, height))
-
-                pixels = image.tobytes("raw", "RGB")
-                size = (width, height)
-
-                img = pygame.image.fromstring(pixels, size, "RGB")
-                self.blit(img, (0, 0))
-
-                text = self.font.render("Preview" if Live == False else "LIVE", 1, (255, 255, 255))
-                self.blit(
-                    text, 
-                    (
-                        (self.get_height()-(text.get_height()+10)), 
-                        (self.get_width()-(text.get_width()+10))
-                    )
-                )
+            if self.drawingThread == False:
+                self.drawPreview(win)
+            elif self.drawingThread.is_alive() is False:
+                self.drawPreview(win)
 
         else:
             # tell the server the screenshare we want
@@ -154,8 +190,35 @@ class screenshare(pygame.Surface):
                 )
             )
 
-        
-        win.blit(self, (self.x, self.y))
+            self.generateImg(self, win)
+
+        if self.img != None:
+            win.blit(self.img, (self.x, self.y))
+
+        if self.thisPc is True:
+            try:
+                text = self.font.render(
+                    "Preview" if Live is False else "Live", 
+                    1, 
+                    (255, 255, 255) if Live is False else (255, 83, 56)
+                )
+            except:
+                pygame.font.init()
+                self.font = pygame.font.SysFont("comicsans", 40)
+
+                text = self.font.render(
+                    "Preview" if Live is False else "Live", 
+                    1, 
+                    (255, 255, 255) if Live is False else (255, 83, 56)
+                )
+
+            win.blit(
+                text, 
+                (
+                    int(self.x + (self.get_width() - (text.get_width() + 10))), 
+                    int(self.y + (self.get_height() - (text.get_height() - 2)))
+                )
+            )
 
 
 class Screen(pygame.Surface):
@@ -485,6 +548,9 @@ def Main(addr):
                     ScreenShareControlScreen.buttons[0].color = (0, 255, 0)
                 else:
                     ScreenShareControlScreen.buttons[0].color = (255, 0, 0)
+            elif Live is False:
+                if ScreenShareControlScreen.buttons[0].color != (255, 0, 0):
+                    ScreenShareControlScreen.buttons[0].color == (255, 0, 0)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
