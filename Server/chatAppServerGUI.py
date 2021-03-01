@@ -86,8 +86,18 @@ class TextWindow(pygame.Surface):
 
         if "\n" in text:
             splitText = text.split("\n")
+
+            split_Max = int(self.get_width()-self.fontSize)+740
+            split_Mark = int(split_Max/self.fontSize)
+            for pos, t in enumerate(splitText):
+                if len(t)*self.fontSize > split_Max:
+                    e = t[split_Mark]
+                    splitText.insert(pos+1, "-" + e + str(t[split_Mark:]))
+                    splitText[pos] = str(t[:split_Mark])+"-"
+
             y = self.YPadding
             for textToRender in splitText:
+                
                 renderedText = self.font.render(textToRender, 1, self.color)
                 self.blit(renderedText, (self.XPadding, y))
                 y += self.fontSize
@@ -160,7 +170,7 @@ def main(usernamesLink, outputLink):
             Button(
                 (255, 255, 255),
                 PADDINGX,
-                int(SIZE[1]-50-PADDINGY)-PADDINGY,
+                int(SIZE[1]-50-PADDINGY),
                 200,
                 50,
                 "Stop server",
@@ -237,6 +247,7 @@ def main(usernamesLink, outputLink):
 
         if serverStartScreen.active is True:
             msg = outputLink()
+
             if len(msg) > 0:
                 for msgOutput in msg:
                     serverOutput += str(msgOutput)+"\n"

@@ -380,9 +380,10 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     clients[client] = username
     usernames[hostname] = username
     clientIps[username] = str(client_addr[0])
+    clientStatus[username] = "Conected"
     checkpulsexit = False
 
-    msgs.append(usernames, hostname)
+    msgs.append(str(str(usernames) + " " + str(hostname)))
 
     heartBeat_Thread = Thread(
         name="HeartBeat-Thread",
@@ -391,6 +392,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
             client_addr[0], 
             ADDR[1]+(len(clients)-1), 
             lambda e=None: changeExit(e),
+            lambda msg : msgs.append(msg),
         ), 
         daemon=True
     )
@@ -430,9 +432,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
             _ = clients[client]
         except:
             delExit = True
-            del usernames[hostname]
             del clients_HeartBeats[username][1]
-            del clientIps[username]
             clients_HeartBeats[username][0] = True
             client.close()
             break
@@ -455,9 +455,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                 except:
                     # msgs.append("EXIT at line 394")
                     del clients[client]
-                    del usernames[hostname]
                     del clients_HeartBeats[username][1]
-                    del clientIps[username]
                     clients_HeartBeats[username][0] = True
                     client.close()
                     delExit = True
@@ -473,9 +471,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                 except:
                     # msgs.append("EXIT at line 410")
                     del clients[client]
-                    del usernames[hostname]
                     del clients_HeartBeats[username][1]
-                    del clientIps[username]
                     clients_HeartBeats[username][0] = True
                     client.close()
                     delExit = True
@@ -490,9 +486,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
                 finally:
                     # msgs.append("EXIT at line 425")
                     del clients[client]
-                    del usernames[hostname]
                     del clients_HeartBeats[username][1]
-                    del clientIps[username]
                     clients_HeartBeats[username][0] = True
                     client.close()
                     delExit = True
@@ -506,9 +500,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     if checkpulsexit == True:
         # msgs.append("EXIT in if at line 439")
         del clients[client]
-        del usernames[hostname]
         del clients_HeartBeats[username][1]
-        del clientIps[username]
         clients_HeartBeats[username][0] = True
         del clients_HeartBeats[username]
         client.close()
@@ -516,6 +508,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     elif delExit == True:
         del clients_HeartBeats[username]
     
+    clientStatus[username] = "Disconected"
     hostnames.pop(hostnames.index(hostname))
     msgs.append(f"Amount of pepole conected: {len(clients)}")
 
