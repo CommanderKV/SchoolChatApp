@@ -243,7 +243,7 @@ def main(usernamesLink, outputLink):
             
             usernamesText = ""
             for pos, username in enumerate(usernames):
-                usernamesText += str(username) + " " + str(clientIps[pos]) + "\t" + str(clientStatus[pos]) + "\n"
+                usernamesText += str(username) + "\t" + str(clientIps[pos]) + "\t" + str(clientStatus[pos]) + "\n"
 
             ConectedUsersScreenTextWindows[0].draw(usernamesText)
 
