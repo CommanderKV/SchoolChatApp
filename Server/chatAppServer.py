@@ -8,15 +8,24 @@ import chatAppServerGUI as GUI
 
 
 clients = {}
+
 clients_HeartBeats = {}
+
 reciveing_screenshares = {}
 sending_screenshares = {}
 screenshares = {}
+
 usernames = {}
+
 clientStatus = {}
 clientIps = {}
 addresses = {}
+
+HeartBeatStatus = {}
+HeartBeatMsgs = []
+
 hostnames = []
+
 nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
 msgs = []
 
@@ -212,6 +221,8 @@ def handle_sending_screenshare(client, hostname):
     global sending_screenshares
     global msgs
     hostname = str(hostname)
+    username = usernames[hostname]
+    clientStatus[username] = "Sharing screen"
 
     try:
         run = True
@@ -382,8 +393,37 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     clientIps[username] = str(client_addr[0])
     clientStatus[username] = "Conected"
     checkpulsexit = False
+    HeartBeatStatus[username] = "Pinging..."
 
     msgs.append(str(str(usernames) + " " + str(hostname)))
+
+    # Change clients_HeartBeats[username][0] from the Thread
+    def changeExit(value=None, username=usernames[hostname]):
+        global clients_HeartBeats
+
+        try:
+            if value != None:
+                clients_HeartBeats[username][0] = True
+                return clients_HeartBeats[username][0]
+            else:
+                return clients_HeartBeats[username][0]
+        except:
+            return True
+
+    def changeHeartBeatStatus(status, username=usernames[hostname]):
+        global HeartBeatStatus
+
+        resultText = list(str(username).center(70))
+
+        for pos, letter in enumerate(str(client_addr[0])):
+            resultText[pos] = letter
+        
+        for pos, letter in enumerate(status):
+            pos = int((len(status)-pos)*-1)
+            resultText[pos] = letter
+
+        HeartBeatStatus[username] = resultText
+
 
     heartBeat_Thread = Thread(
         name="HeartBeat-Thread",
@@ -392,7 +432,8 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
             client_addr[0], 
             ADDR[1]+(len(clients)-1), 
             lambda e=None: changeExit(e),
-            lambda msg : msgs.append(msg),
+            lambda msg : HeartBeatMsgs.append(msg),
+            lambda status="Terminated..." : changeHeartBeatStatus(status),
         ), 
         daemon=True
     )
@@ -411,19 +452,7 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
             checkpulsexit = True
             return False
 
-    # Change clients_HeartBeats[username][0] from the Thread
-    def changeExit(value=None, username=usernames[hostname]):
-        global clients_HeartBeats
-
-        try:
-            if value != None:
-                clients_HeartBeats[username][0] = True
-                return clients_HeartBeats[username][0]
-            else:
-                return clients_HeartBeats[username][0]
-        except:
-            return True
-
+    
     # tell everyone that the user joined the chat
     msg = f"{username} has joined the chat!"
     msgs.append(f"Amount of pepole conected: {len(clients)}")
@@ -561,6 +590,19 @@ def getUsernamesAndStatus():
     clientips = [clientIps[username] for username in usernamesList]
     return usernamesList, clientStatuss, clientips
 
+def getHeartBeatStatus():
+    global HeartBeatStatus
+    usernamesList = [usernames[hostname] for hostname in usernames]
+    HeartBeatStatuss = [HeartBeatStatus[username] for username in usernamesList]
+    return HeartBeatStatuss
+    
+def getHeartBeatMsgs(clear=False):
+    global HeartBeatMsgs
+    if clear is True:
+        HeartBeatMsgs.clear()
+    else:
+        return HeartBeatMsgs
+
 def main():
     global SERVER
     global msgs
@@ -575,6 +617,8 @@ def main():
     
     usernamesLink = lambda : getUsernamesAndStatus()
     outputLink = lambda clear=False : getMsgs(clear)
-    GUI.main(usernamesLink, outputLink)
+    HeartBeatMsgsLink = lambda clear=False : getHeartBeatMsgs(clear)
+    HeartBeatStatusLink = lambda : getHeartBeatStatus()
+    GUI.main(usernamesLink, outputLink, HeartBeatMsgsLink, HeartBeatStatusLink)
 
 main()

@@ -65,11 +65,12 @@ class Screen(pygame.Surface):
 
 
 class TextWindow(pygame.Surface):
-    def __init__(self, x, y, *args, **kwargs):
+    def __init__(self, x, y, text=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.x = x
         self.y = y
 
+        self.textpos = text
         self.color = (255, 255, 255)
         self.fontSize = 30
         self.XPadding = 5
@@ -80,16 +81,16 @@ class TextWindow(pygame.Surface):
 
     def draw(self, text):
         self.fill((48, 48, 48))
-        
+
         if "\t" in text:
             text = text.replace("\t", " "*10)
 
         if "\n" in text:
             splitText = text.split("\n")
 
-            split_Max = int(self.get_width()-self.fontSize)+int(SIZE[0]/self.fontSize)*47
+            split_Max = int(self.get_width()-self.fontSize)+int(SIZE[0]/self.fontSize)*37
             split_Mark = int(split_Max/self.fontSize)
-            print(len(splitText[0])*self.fontSize, split_Max)
+            # print(len(splitText[0])*self.fontSize, split_Max)
             for pos, t in enumerate(splitText):
                 if len(t)*self.fontSize > split_Max:
                     splitText.insert(pos+1, str(t[split_Mark:]))
@@ -104,7 +105,10 @@ class TextWindow(pygame.Surface):
 
         else:
             text = self.font.render(text, 1, self.color)
-            self.blit(text, (0, 0))
+            if self.textpos == None:
+                self.blit(text, (self.YPadding, self.XPadding))
+            elif self.textpos.upper() == "CENTER":
+                self.blit(text, (self.YPadding*3, self.XPadding*3))
 
 
 def switchScreenTo(screentopic):
@@ -127,7 +131,7 @@ def exitGUI():
     global run
     run = False
 
-def main(usernamesLink, outputLink):
+def main(usernamesLink, outputLink, heartbeatsMsg, heartbeartStatus):
     global screens, run, SIZE
 
     SIZE = (800, 850)
@@ -135,83 +139,188 @@ def main(usernamesLink, outputLink):
     PADDINGY = 10
     WIN = pygame.display.set_mode(SIZE)
     clock = pygame.time.Clock()
-    serverOutput = ""
+    serverOutput = []
+    HeartBeatMsgs = []
     screens = []
 
     if True:
 
-        serverStartScreenButtons = [
-            Button(
-                (255, 255, 255),
-                int(SIZE[0]-200)-PADDINGX,
-                int(PADDINGY),
-                200,
-                50,
-                "Conected users",
-                switchScreenTo,
-                "conected users"
-            ),
-            Button(
-                (255, 255, 255),
-                PADDINGX,
-                int(SIZE[1]-50-PADDINGY),
-                200,
-                50,
-                "Stop server",
-                exitGUI
+        # Make the server start screen
+        if True:
+            serverStartScreenButtons = [
+                Button(
+                    (255, 255, 255),
+                    int(SIZE[0]-200)-PADDINGX,
+                    int(PADDINGY),
+                    200,
+                    50,
+                    "Conected users",
+                    switchScreenTo,
+                    "conected users"
+                ),
+                Button(
+                    (255, 255, 255),
+                    int(SIZE[0]-200)-PADDINGX,
+                    int((PADDINGY*2)+50),
+                    200,
+                    50,
+                    "HeartBeats",
+                    switchScreenTo,
+                    "heartbeat msgs"
+                ),
+                Button(
+                    (255, 255, 255),
+                    PADDINGX,
+                    int(SIZE[1]-50-PADDINGY),
+                    200,
+                    50,
+                    "Stop server",
+                    exitGUI
+                )
+            ]
+
+            serverStartScreenTextWindow = [
+                TextWindow(
+                    PADDINGX,
+                    PADDINGY,
+                    size=((SIZE[0]-(PADDINGX*3))-200, (SIZE[1]-(PADDINGY*3)-50))
+                )
+            ]
+
+            serverStartScreen = Screen(
+                (0, 0, 0), 
+                "SERVER START SCREEN", 
+                serverStartScreenButtons, 
+                size=SIZE,
+                otherSurfaces=serverStartScreenTextWindow
             )
-        ]
 
-        serverStartScreenTextWindow = [
-            TextWindow(
-                PADDINGX,
-                PADDINGY,
-                size=((SIZE[0]-(PADDINGX*3))-200, (SIZE[1]-(PADDINGY*3)-50))
+            screens.append(serverStartScreen)
+            serverStartScreen.active = True
+        
+        # Make the Conected users screen
+        if True:
+            ConectedUsersScreenButtons = [
+                Button(
+                    (255, 255, 255),
+                    int(PADDINGX),
+                    int(SIZE[1]-PADDINGY)-50,
+                    200,
+                    50,
+                    "BACK",
+                    switchScreenTo,
+                    "server start screen"
+                )
+            ]
+
+            ConectedUsersScreenTextWindows = [
+                TextWindow(
+                    PADDINGX,
+                    PADDINGY,
+                    size=((SIZE[0]-(PADDINGX*3))-200, (SIZE[1]-(PADDINGY*3)-50))
+                ),
+                TextWindow(
+                    (SIZE[0]-PADDINGX)-200,
+                    PADDINGY,
+                    text="CENTER",
+                    size=(200, 50)
+                )
+            ]
+
+            ConectedUsersScreen = Screen(
+                (0, 0, 0), 
+                "CONECTED USERS", 
+                ConectedUsersScreenButtons,
+                size=SIZE,
+                otherSurfaces=ConectedUsersScreenTextWindows
             )
-        ]
 
-        serverStartScreen = Screen(
-            (0, 0, 0), 
-            "SERVER START SCREEN", 
-            serverStartScreenButtons, 
-            size=SIZE,
-            otherSurfaces=serverStartScreenTextWindow
-        )
+            screens.append(ConectedUsersScreen)
+            ConectedUsersScreen.active = False
 
-        screens.append(serverStartScreen)
-        serverStartScreen.active = True
+        # Make the HeartBeat msgs screen
+        if True:
+            HeartBeatMsgsButtons = [
+                Button(
+                    (255, 255, 255),
+                    int(PADDINGX),
+                    int(SIZE[1]-PADDINGY)-50,
+                    200,
+                    50,
+                    "BACK",
+                    switchScreenTo,
+                    "server start screen"
+                ),
+                Button(
+                    (255, 255, 255),
+                    int(SIZE[0]-200)-PADDINGX,
+                    int(PADDINGY),
+                    200,
+                    50,
+                    "HeartBeats status",
+                    switchScreenTo,
+                    "heartbeat status"
+                ),
+            ]
 
-        ConectedUsersScreenButtons = [
-            Button(
-                (255, 255, 255),
-                int(PADDINGX),
-                int(SIZE[1]-PADDINGY)-50,
-                200,
-                50,
-                "BACK",
-                switchScreenTo,
-                "server start screen"
+            HeartBeatMsgsTextWindows = [
+                TextWindow(
+                    PADDINGX,
+                    PADDINGY,
+                    size=((SIZE[0]-(PADDINGX*3))-200, (SIZE[1]-(PADDINGY*3)-50))
+                )
+            ]
+
+            HeartBeatMsgsScreen = Screen(
+                (0, 0, 0),
+                "HEARTBEAT MSGS",
+                HeartBeatMsgsButtons,
+                otherSurfaces=HeartBeatMsgsTextWindows,
+                size=SIZE
             )
-        ]
 
-        ConectedUsersScreenTextWindows = [
-            TextWindow(
-                PADDINGX,
-                PADDINGY,
-                size=((SIZE[0]-(PADDINGX*3))-200, (SIZE[1]-(PADDINGY*3)-50))
+            screens.append(HeartBeatMsgsScreen)
+            HeartBeatMsgsScreen.active = False
+
+        # Make the HearBeat statuss screen
+        if True:
+            HeartBeatStatusButtons = [
+                Button(
+                    (255, 255, 255),
+                    int(PADDINGX),
+                    int(SIZE[1]-PADDINGY)-50,
+                    200,
+                    50,
+                    "BACK",
+                    switchScreenTo,
+                    "heartbeat msgs"
+                ),
+            ]
+
+            HeartBeatStatusTextWindows = [
+                TextWindow(
+                    PADDINGX,
+                    PADDINGY,
+                    size=((SIZE[0]-(PADDINGX*3))-200, (SIZE[1]-(PADDINGY*3)-50))
+                ),
+                TextWindow(
+                    (SIZE[0]-PADDINGX)-200,
+                    PADDINGY,
+                    text="CENTER",
+                    size=(200, 50)
+                )
+            ]
+
+            HeartBeatStatusScreen = Screen(
+                (0, 0, 0),
+                "HEARTBEAT STATUS",
+                HeartBeatStatusButtons,
+                otherSurfaces=HeartBeatStatusTextWindows,
+                size=SIZE
             )
-        ]
 
-        ConectedUsersScreen = Screen(
-            (0, 0, 0), 
-            "CONECTED USERS", 
-            ConectedUsersScreenButtons,
-            size=SIZE,
-            otherSurfaces=ConectedUsersScreenTextWindows
-        )
-
-        screens.append(ConectedUsersScreen)
-        ConectedUsersScreen.active = False
+            screens.append(HeartBeatStatusScreen)
+            HeartBeatStatusScreen.active = False
 
     run = True
     while run:
@@ -234,8 +343,14 @@ def main(usernamesLink, outputLink):
 
             if len(msg) > 0:
                 for msgOutput in msg:
-                    serverOutput += str(msgOutput)+"\n"
-                    serverStartScreenTextWindow[0].draw(serverOutput)
+                    serverOutput.append(str(msgOutput)+"\n")
+
+            serverOutputText = ""
+            if len(serverOutput) > 0:
+                for msg in serverOutput:
+                    serverOutputText += str(msg)
+
+            serverStartScreenTextWindow[0].draw(serverOutputText)
             outputLink(True)
 
         elif ConectedUsersScreen.active is True:
@@ -245,6 +360,55 @@ def main(usernamesLink, outputLink):
             for pos, username in enumerate(usernames):
                 usernamesText += str(username) + "\t" + str(clientIps[pos]) + "\t" + str(clientStatus[pos]) + "\n"
 
+            connectedUsersAmount = len(usernames)
+            for status in clientStatus:
+                if status.upper() == "DISCONECTED":
+                    connectedUsersAmount -= 1
+
             ConectedUsersScreenTextWindows[0].draw(usernamesText)
+            ConectedUsersScreenTextWindows[1].draw(f"Connected: ({connectedUsersAmount})")
+
+        elif HeartBeatMsgsScreen.active is True:
+            HeartBeatMsg = heartbeatsMsg()
+
+            if len(HeartBeatMsg) > 0:
+                for heartbeatOutput in HeartBeatMsg:
+                    HeartBeatMsgs.append(str(heartbeatOutput)+"\n")
+            
+            HeartBeatOutputText = ""
+            if len(HeartBeatMsgs) > 0:
+                for msg in HeartBeatMsgs:
+                    HeartBeatOutputText += msg
+            
+            HeartBeatMsgsTextWindows[0].draw(HeartBeatOutputText)
+            heartbeatsMsg(True)
+
+        elif HeartBeatStatusScreen.active is True:
+            HeartBeatStatusList = heartbeartStatus()
+            
+            HeartBeatText = ""
+            resultText = list(str("Username").center(70))
+
+            for pos, letter in enumerate(str("Ip")):
+                resultText[pos] = letter
+            
+            for pos, letter in enumerate(str("Status")):
+                pos = int((len("Status")-pos)*-1)
+                resultText[pos] = letter
+
+            for letter in resultText:
+                HeartBeatText += letter
+
+            conectedHeartBeats = 0
+            if len(HeartBeatStatusList) > 0:
+                for heartbeat in HeartBeatStatusList:
+                    HeartBeatText += str(heartbeat)+"\n"
+                    if "Terminated..." not in heartbeat:
+                        conectedHeartBeats += 1
+
+            conectedHeartBeats = f"Conected: ({conectedHeartBeats})"
+
+            HeartBeatStatusTextWindows[0].draw(HeartBeatText)
+            HeartBeatStatusTextWindows[1].draw(conectedHeartBeats)
 
         drawWindow(WIN)
