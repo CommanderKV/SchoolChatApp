@@ -88,7 +88,7 @@ class TextWindow(pygame.Surface):
         if "\n" in text:
             splitText = text.split("\n")
 
-            split_Max = int(self.get_width()-self.fontSize)+int(SIZE[0]/self.fontSize)*37
+            split_Max = int(self.get_width()-self.fontSize)+int(SIZE[0]/self.fontSize)*62
             split_Mark = int(split_Max/self.fontSize)
             # print(len(splitText[0])*self.fontSize, split_Max)
             for pos, t in enumerate(splitText):
@@ -356,9 +356,39 @@ def main(usernamesLink, outputLink, heartbeatsMsg, heartbeartStatus):
         elif ConectedUsersScreen.active is True:
             usernames, clientStatus, clientIps = usernamesLink()
             
-            usernamesText = ""
+            # Set up the layout message at the top
+            if True:
+                usernamesText = "IP"
+                usernamesTextList = list(str(usernamesText.center(70)))
+                for pos, letter in enumerate(str("Username")):
+                    usernamesTextList[pos] = letter
+                
+                for pos, letter in enumerate(str("Status")):
+                    pos = int((len("Status") - pos) * -1)
+                    usernamesTextList[pos] = letter
+                
+                usernamesText = ""
+                for letter in usernamesTextList:
+                    usernamesText += letter
+                
+                usernamesText += "\n"
+
             for pos, username in enumerate(usernames):
-                usernamesText += str(username) + "\t" + str(clientIps[pos]) + "\t" + str(clientStatus[pos]) + "\n"
+                result = clientIps[pos]
+                resultList = list(str(result.center(70)))
+
+                for pos, letter in enumerate(str(username)):
+                    resultList[pos] = letter
+
+                for pos, letter in enumerate(str(clientStatus[pos])):
+                    pos = int((len(str(clientStatus[pos])) - pos) * -1)
+                    resultList[pos] = letter
+                
+                result = ""
+                for letter in resultList:
+                    result += letter
+
+                usernamesText += result + "\n"
 
             connectedUsersAmount = len(usernames)
             for status in clientStatus:
@@ -393,15 +423,18 @@ def main(usernamesLink, outputLink, heartbeatsMsg, heartbeartStatus):
                 resultText[pos] = letter
             
             for pos, letter in enumerate(str("Status")):
-                pos = int((len("Status")-pos)*-1)
+                pos = int((len("Status") - pos) * -1)
                 resultText[pos] = letter
 
             for letter in resultText:
                 HeartBeatText += letter
+            
+            HeartBeatText += "\n"
 
             conectedHeartBeats = 0
             if len(HeartBeatStatusList) > 0:
                 for heartbeat in HeartBeatStatusList:
+                    # heartbeat[-len("Terminated")] = "   "
                     HeartBeatText += str(heartbeat)+"\n"
                     if "Terminated..." not in heartbeat:
                         conectedHeartBeats += 1

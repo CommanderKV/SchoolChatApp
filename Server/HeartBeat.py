@@ -25,7 +25,7 @@ def main(ip, port, stop, msgs, status):
             client.close()
             return
         
-        msgs(f"[HEARTBEAT] HeartBeat connection established to:\n\t'{addr[0]}:{addr[1]}'")
+        msgs(f"Connection established to: '{addr[0]}:{addr[1]}'")
 
         client.settimeout(2.0)
 
@@ -56,12 +56,12 @@ def main(ip, port, stop, msgs, status):
             break
     
     if pings >= 10:
-        msgs(f"[TERMINATING] Becuase Server sent: '{pings}' pings and recived no response")
-        msgs(f"[TERMINATING] Closing connection to:\n\t'{addr[0]}:{addr[1]}'")
+        msgs(f"Server sent: '{pings}' pings and recived no response")
+        msgs(f"Closing connection to: '{addr[0]}:{addr[1]}'")
         status("Terminated...")
         stop(True)
     else:
-        msgs(f"[TERMINATING] HeartBeat to:\n\t'{addr[0]}:{addr[1]}'")
+        msgs(f"[TERMINATING] Connection to: '{addr[0]}:{addr[1]}'")
         status("Terminated..")
 
 def hi(client, addr, pings, stop, msgs):
@@ -72,7 +72,7 @@ def hi(client, addr, pings, stop, msgs):
 
     except:
         if stop() == False:
-            msgs(f"Ping from: '{addr[0]}:{addr[1]}' failed.\n\tAttempt '{pings+1}/10'")
+            msgs(f"Ping from: '{addr[0]}:{addr[1]}' failed. Attempt '{pings+1}/10'")
         return False
     
     return True
@@ -84,7 +84,7 @@ def hey(client, addr, pings, stop, msgs):
 
     except:
         if stop() == False:
-            msgs(f"Ping to: '{addr[0]}:{addr[1]}' failed.\n\tAttempt '{pings+1}/10'")
+            msgs(f"Ping to: '{addr[0]}:{addr[1]}' failed. Attempt '{pings+1}/10'")
         return False
     
     return True

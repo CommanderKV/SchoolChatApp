@@ -413,7 +413,9 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
     def changeHeartBeatStatus(status, username=usernames[hostname]):
         global HeartBeatStatus
 
-        resultText = list(str(username).center(70))
+        resultText = list(
+            str(username).center(70)
+        )
 
         for pos, letter in enumerate(str(client_addr[0])):
             resultText[pos] = letter
@@ -422,7 +424,12 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
             pos = int((len(status)-pos)*-1)
             resultText[pos] = letter
 
-        HeartBeatStatus[username] = resultText
+
+        result = ""
+        for letter in resultText:
+            result += letter
+
+        HeartBeatStatus[username] = result
 
 
     heartBeat_Thread = Thread(
