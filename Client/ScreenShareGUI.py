@@ -520,7 +520,7 @@ def Main(addr):
         screens.append(ScreenShareControlScreen)
         ScreenShareControlScreen.active = False
 
-        name = f"UpdateViewScreensScreens-Thread"
+        name = "UpdateViewScreensScreens-Thread"
         t = Thread(
             name=name,
             target=updateViewScreensScreens, 
@@ -548,9 +548,10 @@ def Main(addr):
                     ScreenShareControlScreen.buttons[0].color = (0, 255, 0)
                 else:
                     ScreenShareControlScreen.buttons[0].color = (255, 0, 0)
+
             elif Live is False:
                 if ScreenShareControlScreen.buttons[0].color != (255, 0, 0):
-                    ScreenShareControlScreen.buttons[0].color == (255, 0, 0)
+                    ScreenShareControlScreen.buttons[0].color = (255, 0, 0)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
