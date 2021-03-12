@@ -541,11 +541,11 @@ def handle_client(client, username, hostname, client_addr):  # Takes client sock
         del clients[client]
         del clients_HeartBeats[username][1]
         clients_HeartBeats[username][0] = True
-        del clients_HeartBeats[username]
         client.close()
 
     elif delExit == True:
-        del clients_HeartBeats[username]
+        del clients_HeartBeats[username][1]
+        clients_HeartBeats[username][0] = True
     
     clientStatus[username] = "Disconected"
     hostnames.pop(hostnames.index(hostname))
@@ -572,12 +572,13 @@ def broadcast(msg, prefix="", msgTF=True):  # prefix is for name identification.
         # msgs.append(f"Len of usernames_of_clients: '{len(usernames_of_clients)}'")
         # msgs.append(f"Len of usernames_of_clients[pos]: '{len(usernames_of_clients[pos])}'")
         # msgs.append(f"Len of '{len(clients_HeartBeats[usernames_of_clients[pos]])}'")
-        if clients_HeartBeats[usernames_of_clients[pos]][1].is_alive():
-            sock.send(bytes(prefix, "utf8")+msg)
-            # msgs.append(f"Sending: '{prefix+(msg.decode())}'")
-        else:
-            msgs.append(f"Username: '{usernames_of_clients[pos]}' is being delted")
-            delsocks.append(clients[sock])
+        if clients_HeartBeats[usernames_of_clients[pos]][0] is not True:
+            if clients_HeartBeats[usernames_of_clients[pos]][1].is_alive():
+                sock.send(bytes(prefix, "utf8")+msg)
+                # msgs.append(f"Sending: '{prefix+(msg.decode())}'")
+            else:
+                msgs.append(f"Username: '{usernames_of_clients[pos]}' is being delted")
+                delsocks.append(clients[sock])
     
     if len(delsocks) > 0:
         for sock in delsocks:

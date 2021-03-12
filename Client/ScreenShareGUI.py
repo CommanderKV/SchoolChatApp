@@ -64,13 +64,13 @@ class screenshare(pygame.Surface):
             ip = gethostbyname(gethostname())
             self.reciver.sendall(bytes(f"[SCREENSHARE_{ip}_R]", "utf-8"))
     
-    def generateImg(self, surface, win):
+    def generateImg(self, surface):
         global Live
 
         self.img = surface
         
 
-    def drawPreview(self, win):
+    def drawPreview(self):
         def makeSurface(screens, genIMG):
             import time
             start = time.time()
@@ -101,12 +101,12 @@ class screenshare(pygame.Surface):
                     genIMG(img)
         
         screensAcess = lambda : screens
-        genIm = lambda img=None : self.generateImg(img, win)
+        genIm = lambda img=None : self.generateImg(img)
         self.drawingThread = Thread(
             target=makeSurface, 
             args=(
                 screensAcess,
-                genIm
+                genIm,
             ), 
             daemon=True
         )
@@ -120,9 +120,9 @@ class screenshare(pygame.Surface):
         #self.fill(self.bg)
         if self.thisPc is True:
             if self.drawingThread == False:
-                self.drawPreview(win)
+                self.drawPreview()
             elif self.drawingThread.is_alive() is False:
-                self.drawPreview(win)
+                self.drawPreview()
 
         else:
             # tell the server the screenshare we want
@@ -190,7 +190,7 @@ class screenshare(pygame.Surface):
                 )
             )
 
-            self.generateImg(self, win)
+            self.generateImg(self)
 
         if self.img != None:
             win.blit(self.img, (self.x, self.y))
@@ -270,7 +270,9 @@ def startScreenShare(addr):
     t.start()
 
 def stopScreenSharing():
-    global Live, Sharing_Screen
+    global Live, Sharing_Screen, threads
+
+    threads.pop("sender.main")
 
     # set live and sharing_screen to False
     Live = False
@@ -299,6 +301,7 @@ def updateViewScreensScreens(ViewScreensPadding, host, port):
     global screens, OPEN, ThreadsOn, RUN
 
     start = time.time()
+    last_Amount = float("-inf")
 
     while OPEN and ThreadsOn:
         sharedVars.acquire()

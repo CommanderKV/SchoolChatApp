@@ -86,7 +86,7 @@ def screenshare_picture_taker(sender):
                 # print(f"Sending msg: '{msg}'")
 
                 sender.sendall(bytes("True", "utf-8"))
-                print("Sending countinue statment: 'True'")
+                # print("Sending countinue statment: 'True'")
 
                 # capture the screen
                 img = sct.grab(RECT)
@@ -95,7 +95,7 @@ def screenshare_picture_taker(sender):
             # send a stop sharing signal
             sender.sendall(bytes([len("False")]))
             sender.sendall(bytes("False", "utf-8"))
-            print("Sending countinue statment: 'False'")
+            # print("Sending countinue statment: 'False'")
         
         finally:
             sender.close()
