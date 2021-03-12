@@ -377,12 +377,12 @@ def main(usernamesLink, outputLink, heartbeatsMsg, heartbeartStatus):
                 result = clientIps[pos]
                 resultList = list(str(result.center(70)))
 
-                for pos, letter in enumerate(str(username)):
-                    resultList[pos] = letter
+                for pos2, letter in enumerate(str(username)):
+                    resultList[pos2] = letter
 
-                for pos, letter in enumerate(str(clientStatus[pos])):
-                    pos = int((len(str(clientStatus[pos])) - pos) * -1)
-                    resultList[pos] = letter
+                for pos1, letter in enumerate(str(clientStatus[pos])):
+                    pos1 = int((len(str(clientStatus[pos])) - pos1) * -1)
+                    resultList[pos1] = letter
                 
                 result = ""
                 for letter in resultList:
