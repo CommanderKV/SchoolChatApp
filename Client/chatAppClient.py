@@ -1,4 +1,3 @@
-"""Script for Tkinter GUI chat client."""
 from socket import AF_INET, socket, SOCK_STREAM, gethostname, gethostbyname
 import requests
 from threading import Thread
